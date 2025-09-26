@@ -13,9 +13,8 @@ const getUsers = async (req, res) => {
 // POST /users
 const createUser = async (req, res) => {
   try {
-    const { userId, name, email, password } = req.body;    
-    console.log("Datos", userId, name, email, password);
-    const newUser = await userService.addUser({userId, name, email, password});
+    const { name, email, password } = req.body;    
+    const newUser = await userService.addUser({ name, email, password});
     res.status(201).json(newUser.toJSON());
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -64,4 +63,18 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, createUser, getUserByEmail, updateUser, deleteUser };
+const getUserID = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const objectId = await userService.getUserObjectId(email, password);
+    if (!objectId) {
+      return res.status(404).json({ message: "Invalid email or password" });
+    }
+    res.json({ objectId });
+  } catch (error) { 
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser };
