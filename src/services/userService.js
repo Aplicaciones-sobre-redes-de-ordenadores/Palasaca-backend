@@ -1,25 +1,32 @@
 const Parse = require("../config/parseConfig");
 const bcrypt = require("bcrypt");
+const UserModel = require("../models/userModel.js");
 
+// Obtener todos los usuarios de BBDD:Usuarios
 const getAllUsers = async () => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
-  return await query.find({ useMasterKey: true });
+  const results =  await query.find({ useMasterKey: true });
+
+  return results.map(u => new UserModel(u.get("Nombre"),u.get("Correo")));
 };
 
-const addUser = async ({ userId, name, email, password }) => {
-  const User = Parse.Object.extend("Usuarios");
+// Agregar usuario a la BBDD:Usuarios
+const addUser = async ({ name, email, password }) => {
+  const ParseUser = Parse.Object.extend("Usuarios");
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User();
+  const user = new ParseUser();
 
-  user.set("id_usuario", userId);
   user.set("Nombre", name);
   user.set("Correo", email);
   user.set("PassWord", hashedPassword);
 
-  return await user.save(null, { useMasterKey: true });
+  const savedUser = await user.save(null, { useMasterKey: true });
+  return new UserModel(savedUser.get("Nombre"),savedUser.get("Correo"));
+
 };
 
+// Buscar usuario por email en la BBDD:Usuarios
 const findUserByEmail = async (email) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -29,10 +36,8 @@ const findUserByEmail = async (email) => {
   try {
     const result = await query.first({ useMasterKey: true });
     if (result) {
-      console.log("User found:", result.toJSON());
-      return result;
+      return new UserModel(result.get("Nombre"),result.get("Correo"));
     } else {
-      console.log("No user found with that email");
       return null;
     }
   } catch (error) {
@@ -41,6 +46,7 @@ const findUserByEmail = async (email) => {
   }
 };
 
+// Actualizar nombre de usuario filtrando por objectId de la BBDD:Usuarios
 const updateUser = async (objectId, newName) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -50,10 +56,11 @@ const updateUser = async (objectId, newName) => {
 
   user.set("Nombre", newName);
   await user.save(null,{ useMasterKey: true });
-  console.log("User updated:", user.toJSON());
-  return user;
+
+  return new UserModel(user.get("Nombre"), user.get("Correo"));
 };
 
+// Eliminar usuario usando su objectId en BBDD:Usuarios
 const deleteUser = async (objectId) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -61,12 +68,27 @@ const deleteUser = async (objectId) => {
   try {
     const user = await query.get(objectId, { useMasterKey: true });
     await user.destroy({ useMasterKey: true });
-    console.log("User deleted");
     return true;
   } catch (error) {
-    console.error("Error:", error.message);
     throw error;
   }
 };
 
-module.exports = { getAllUsers, addUser, findUserByEmail, updateUser, deleteUser };
+//Obtener objectId si email y contraseña son correctos
+const getUserObjectId = async (email, password) => {
+  const ParseUser = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(ParseUser);
+  query.equalTo("Correo", email);
+
+  const result = await query.first({ useMasterKey: true });
+  if (!result) return null;
+
+  const hashedPassword = result.get("PassWord");
+  const isMatch = await bcrypt.compare(password, hashedPassword);
+
+  if (!isMatch) return null;
+
+  return result.id;
+};
+
+module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUser, deleteUser };

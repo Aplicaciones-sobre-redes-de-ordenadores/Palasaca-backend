@@ -14,7 +14,7 @@ app.use("/users", userRoutes);
 
 // Ruta base
 app.get("/", (req, res) => {
-  res.send("API funcionando");
+  res.send("Servidor Web funcionando");
 });
 
 
