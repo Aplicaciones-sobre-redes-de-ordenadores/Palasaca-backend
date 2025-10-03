@@ -97,21 +97,5 @@ const getUserID = async (req, res) => {
   }
 };
 
-const loginUserController = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const objectId = await userService.getUserObjectId(email, password);
-    if (!objectId) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-    return res.json({ 
-        success: true
-        , user: { objectId, email }
-      });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-
-module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser, loginUserController};
+module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser};
