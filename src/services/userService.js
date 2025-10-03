@@ -1,6 +1,7 @@
 const Parse = require("../config/parseConfig");
 const bcrypt = require("bcrypt");
-const UserModel = require("../models/userModel.js");
+const UserModel = require("../models/UserModel.js");
+
 
 // Obtener todos los usuarios de BBDD:Usuarios
 const getAllUsers = async () => {
@@ -13,6 +14,20 @@ const getAllUsers = async () => {
 
 // Agregar usuario a la BBDD:Usuarios
 const addUser = async ({ name, email, password }) => {
+  // Validaciones básicas
+  if (!name || !email || !password) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Todos los campos son obligatorios' 
+    });
+  }
+
+  // VERIFICAR SI EL USUARIO YA EXISTE
+  const existingUser = await getUserByEmailFromDB(email);
+  if (existingUser) {
+    throw new Error('User already exists');
+  }
+
   const ParseUser = Parse.Object.extend("Usuarios");
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = new ParseUser();
@@ -24,6 +39,22 @@ const addUser = async ({ name, email, password }) => {
   const savedUser = await user.save(null, { useMasterKey: true });
   return new UserModel(savedUser.get("Nombre"),savedUser.get("Correo"));
 
+};
+
+// Función auxiliar para verificar usuario existente
+const getUserByEmailFromDB = async (email) => {
+  try {
+    const normalizedEmail = email.trim();
+    const User = Parse.Object.extend("Usuarios");
+    const query = new Parse.Query(User);
+    query.equalTo("Correo", normalizedEmail); 
+    
+    const user = await query.first({ useMasterKey: true });
+    return user;
+  } catch (error) {
+    console.error('Error checking existing user:', error);
+    return null;
+  }
 };
 
 // Buscar usuario por email en la BBDD:Usuarios
