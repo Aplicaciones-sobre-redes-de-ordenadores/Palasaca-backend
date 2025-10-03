@@ -109,5 +109,5 @@ function findBasePath(layer) {
   if (layer.regexp && layer.regexp.fast_slash) {
     return '';
   }
-  return '/api/users'; // Fallback al path que sabemos
+  return '/users'; // Fallback al path que sabemos
 }
