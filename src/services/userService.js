@@ -1,6 +1,6 @@
 const Parse = require("../config/parseConfig");
 const bcrypt = require("bcrypt");
-const UserModel = require("../models/UserModel.js");
+const UserModel = require("../models/userModel.js");
 
 
 // Obtener todos los usuarios de BBDD:Usuarios
