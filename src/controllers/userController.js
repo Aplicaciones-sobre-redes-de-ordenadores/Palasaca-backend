@@ -14,6 +14,7 @@ const getUsers = async (req, res) => {
 // POST /users
 const createUser = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { name, email, password } = req.body;   
 
     const newUser = await userService.addUser({ name, email, password});
@@ -24,6 +25,11 @@ const createUser = async (req, res) => {
       message: 'User created successfully',
       user: newUser.toJSON ? newUser.toJSON() : newUser
     });
+=======
+    const { name, email, password } = req.body;    
+    const newUser = await userService.addUser({ name, email, password});
+    res.status(201).json(newUser.toJSON());
+>>>>>>> 4b57b26c63039bf09d039d2f984e541da0b0fcf9
   } catch (error) {
     console.error('Error at createUser:', error);
     

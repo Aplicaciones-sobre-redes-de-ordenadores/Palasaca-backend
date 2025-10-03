@@ -2,6 +2,7 @@ const Parse = require("../config/parseConfig");
 const bcrypt = require("bcrypt");
 const UserModel = require("../models/UserModel.js");
 
+
 // Obtener todos los usuarios de BBDD:Usuarios
 const getAllUsers = async () => {
   const User = Parse.Object.extend("Usuarios");
