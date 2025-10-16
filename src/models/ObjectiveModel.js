@@ -11,7 +11,7 @@ class Objetivo {
     this.Fecha_Fin = Fecha_Fin;
     this.imagenObjetivo = imagenObjetivo;
     this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.updatedAt = updatedAt;//a
   }
 
     toJSON() {

@@ -1,5 +1,5 @@
 const Parse = require("../config/parseConfig");
-const MovementModel = require("../models/movementModel.js");
+const MovementModel = require("../models/MovementModel.js");
 // Obtener movimientos por cuenta
 const getMovementsByAccount = async (accountId) => {
   try {

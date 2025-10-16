@@ -1,5 +1,5 @@
 const Parse = require("../config/parseConfig");
-const AccountModel = require("../models/accountModel");
+const AccountModel = require("../models/AccountModel");
 
 
 

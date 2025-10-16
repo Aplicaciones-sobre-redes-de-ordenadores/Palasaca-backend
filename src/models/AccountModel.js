@@ -6,8 +6,9 @@ class AccountModel {
         this.NombreCuenta = NombreCuenta;
         this.Dinero = Dinero;
         this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.updatedAt = updatedAt;//a
     }
+
 
     toJSON() {
         return {

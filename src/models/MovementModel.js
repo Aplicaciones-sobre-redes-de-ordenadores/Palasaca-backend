@@ -8,7 +8,7 @@ class MovementModel {
     this.Comentarios = Comentarios;
     this.Cantidad = Cantidad;
     this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.updatedAt = updatedAt;//a
   }
 
   toJSON() {
