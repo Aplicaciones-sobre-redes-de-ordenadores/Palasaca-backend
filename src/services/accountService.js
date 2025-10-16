@@ -1,5 +1,6 @@
 const Parse = require("../config/parseConfig");
-const AccountModel = require("../models/AccountModel.js");
+const AccountModel = require("../models/accountModel");
+
 
 
 // Obtener todas las cuentas de un usuario
