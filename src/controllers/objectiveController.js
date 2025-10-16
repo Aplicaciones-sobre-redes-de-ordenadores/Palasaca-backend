@@ -1,4 +1,4 @@
-const objetivosService = require("../services/objetivosService"); // Lógica de Parse
+const objetivosService = require("../services/objetivesService"); 
 
 // GET /objetivos/cuenta/:accountId
 const getObjetivosByAccount = async (req, res) => {
@@ -16,19 +16,7 @@ const getObjetivosByAccount = async (req, res) => {
 
     res.json({
       success: true,
-      objetivos: objetivos.map(obj => ({
-        id: obj.id,
-        id_cuenta: obj.id_cuenta,
-        Descripcion: obj.Descripcion,
-        PorcentajeAhorro: obj.PorcentajeAhorro,
-        Cantidad_Objetivo: obj.Cantidad_Objetivo,
-        Cantidad_Actual: obj.Cantidad_Actual,
-        Fecha_Inicio: obj.Fecha_Inicio,
-        Fecha_Fin: obj.Fecha_Fin,
-        imagenObjetivo: obj.imagenObjetivo,
-        createdAt: obj.createdAt,
-        updatedAt: obj.updatedAt
-      }))
+      objetivos: objetivos.map(obj => obj.toJSON())
     });
   } catch (error) {
     console.error("Error in getObjetivosByAccount:", error);
@@ -78,19 +66,7 @@ const createObjetivo = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Objetivo creado exitosamente",
-      objetivo: {
-        id: newObjetivo.id,
-        id_cuenta: newObjetivo.id_cuenta,
-        Descripcion: newObjetivo.Descripcion,
-        PorcentajeAhorro: newObjetivo.PorcentajeAhorro,
-        Cantidad_Objetivo: newObjetivo.Cantidad_Objetivo,
-        Cantidad_Actual: newObjetivo.Cantidad_Actual,
-        Fecha_Inicio: newObjetivo.Fecha_Inicio,
-        Fecha_Fin: newObjetivo.Fecha_Fin,
-        imagenObjetivo: newObjetivo.imagenObjetivo,
-        createdAt: newObjetivo.createdAt,
-        updatedAt: newObjetivo.updatedAt
-      }
+      objetivo: newObjetivo.toJSON()
     });
   } catch (error) {
     console.error("Error in createObjetivo:", error);
@@ -119,11 +95,7 @@ const updateObjetivoProgress = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Progreso de objetivo actualizado correctamente",
-      objetivo: {
-        id: updatedObjetivo.id,
-        Cantidad_Actual: updatedObjetivo.get("Cantidad_Actual"),
-        updatedAt: updatedObjetivo.get("updatedAt")
-      }
+      objetivo: updatedObjetivo.toJSON()
     });
   } catch (error) {
     console.error("Error in updateObjetivoProgress:", error);
