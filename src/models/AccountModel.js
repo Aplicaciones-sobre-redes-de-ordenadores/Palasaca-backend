@@ -21,4 +21,3 @@ class AccountModel {
         };
     }
 }
-module.exports = AccountModel;
