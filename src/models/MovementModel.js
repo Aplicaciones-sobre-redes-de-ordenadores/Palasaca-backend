@@ -25,3 +25,4 @@ class MovementModel {
     };
   }
 }
+module.exports = MovementModel;
