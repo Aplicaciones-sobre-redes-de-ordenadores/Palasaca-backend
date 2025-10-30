@@ -4,6 +4,7 @@ const userRoutes = require("./routes/userRoutes");
 const accountRoutes = require('./routes/accountRoutes');
 const movementRoutes = require('./routes/movementRoutes');
 const loginRoutes = require('./routes/loginRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 const app = express();
 
 // --- Middleware esenciales ---
@@ -26,6 +27,8 @@ app.use("/users", userRoutes);
 app.use('/accounts', accountRoutes);
 app.use('/movements', movementRoutes);
 app.use('/login', loginRoutes);
+app.use('/payments', paymentRoutes);
+
 
 // --- Ruta no encontrada (404) ---
 app.use((req, res, next) => {
