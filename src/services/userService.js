@@ -78,7 +78,7 @@ const findUserByEmail = async (email) => {
 };
 
 // Actualizar nombre de usuario filtrando por objectId de la BBDD:Usuarios
-const updateUser = async (objectId, newName) => {
+const updateUserName = async (objectId, newName) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
 
@@ -86,6 +86,24 @@ const updateUser = async (objectId, newName) => {
   if (!user) throw new Error("User not found");
 
   user.set("Nombre", newName);
+  await user.save(null,{ useMasterKey: true });
+
+  return new UserModel(user.get("Nombre"), user.get("Correo"));
+};
+
+const updateUserPassword = async (objectId, checkPassword, newPassword) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
+
+  const user = await query.get(objectId, { useMasterKey: true });
+  if (!user) throw new Error("User not found");
+
+  if (await compareUsersPassword(user.get("PassWord"), checkPassword)){
+    console.log("He entrado");
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.set("PassWord", hashedPassword);
+  };
+
   await user.save(null,{ useMasterKey: true });
 
   return new UserModel(user.get("Nombre"), user.get("Correo"));
@@ -114,12 +132,21 @@ const getUserObjectId = async (email, password) => {
   const result = await query.first({ useMasterKey: true });
   if (!result) return null;
 
-  const hashedPassword = result.get("PassWord");
-  const isMatch = await bcrypt.compare(password, hashedPassword);
+  const isMatch = await compareUsersPassword(result.get("PassWord"), password);
 
   if (!isMatch) return null;
 
   return result.id;
 };
 
-module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUser, deleteUser };
+
+//comparar contraseña de un usuario
+//DESPUES de hacer una query (result)
+const compareUsersPassword = async (passwordDB, password) => {
+  const hashedPassword = passwordDB;
+  const isMatch = await bcrypt.compare(password, hashedPassword);
+  return isMatch;
+};
+
+
+module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUserName, updateUserPassword, deleteUser };
