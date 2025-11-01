@@ -61,11 +61,18 @@ const getUserByEmail = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: "name is required" });
+    const { name, checkPassword, newPassword } = req.body;
+    let updatedUser = "";
+
+    if (name) {
+      updatedUser = await userService.updateUserName(id, name);
     }
-    const updatedUser = await userService.updateUser(id, name);
+    if (checkPassword && newPassword){
+      updatedUser = await userService.updateUserPassword(id, checkPassword , newPassword);
+    } else {
+      res.status(404).json({ message: "checkPassword and newPassword needed to change the password" });
+    }
+
     res.json(updatedUser.toJSON());
   } catch (error) {
     res.status(400).json({ message: error.message });
