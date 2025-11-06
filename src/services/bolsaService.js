@@ -12,12 +12,12 @@ const getAllBolsas = async () => {
 
     return results.map(b => new BolsaModel(
       b.id,
-      b.get("codigo"),
-      b.get("empresa"),
-      b.get("nombre"),
-      b.get("url_imagen"),
-      b.get("precio"),
-      b.get("variacionPrecio"),
+      b.get("Codigo"),
+      b.get("Empresa"),
+      b.get("Nombre"),
+      b.get("URLImagen"),
+      b.get("Precio"),
+      b.get("VariacionPrecioDiario"),
       b.get("createdAt"),
       b.get("updatedAt")
     ));
@@ -33,23 +33,23 @@ const createBolsa = async (data) => {
     const Bolsa = Parse.Object.extend("Bolsa");
     const bolsa = new Bolsa();
 
-    bolsa.set("codigo", data.codigo);
-    bolsa.set("empresa", data.empresa);
-    bolsa.set("nombre", data.nombre);
-    bolsa.set("url_imagen", data.url_imagen);
-    bolsa.set("precio", parseFloat(data.precio));
-    bolsa.set("variacionPrecio", parseFloat(data.variacionPrecio || 0));
+    bolsa.set("Codigo", data.codigo);
+    bolsa.set("Empresa", data.empresa);
+    bolsa.set("Nombre", data.nombre);
+    bolsa.set("URLImagen", data.url_imagen);
+    bolsa.set("Precio", parseFloat(data.precio));
+    bolsa.set("VariacionPrecioDiario", parseFloat(data.VariacionPrecioDiario || 0));
 
     const saved = await bolsa.save(null, { useMasterKey: true });
 
     return new BolsaModel(
       saved.id,
-      saved.get("codigo"),
-      saved.get("empresa"),
-      saved.get("nombre"),
-      saved.get("url_imagen"),
-      saved.get("precio"),
-      saved.get("variacionPrecio"),
+      saved.get("Codigo"),
+      saved.get("Empresa"),
+      saved.get("Nombre"),
+      saved.get("URLImagen"),
+      saved.get("Precio"),
+      saved.get("VariacionPrecioDiario"),
       saved.get("createdAt"),
       saved.get("updatedAt")
     );
@@ -68,12 +68,12 @@ const getBolsaById = async (id) => {
 
     return new BolsaModel(
       result.id,
-      result.get("codigo"),
-      result.get("empresa"),
-      result.get("nombre"),
-      result.get("url_imagen"),
-      result.get("precio"),
-      result.get("variacionPrecio"),
+      result.get("Codigo"),
+      result.get("Empresa"),
+      result.get("Nombre"),
+      result.get("URLImagen"),
+      result.get("Precio"),
+      result.get("VariacionPrecioDiario"),
       result.get("createdAt"),
       result.get("updatedAt")
     );
@@ -90,23 +90,23 @@ const updateBolsa = async (id, updates) => {
     const query = new Parse.Query(Bolsa);
     const bolsa = await query.get(id, { useMasterKey: true });
 
-    if (updates.codigo) bolsa.set("codigo", updates.codigo);
-    if (updates.empresa) bolsa.set("empresa", updates.empresa);
-    if (updates.nombre) bolsa.set("nombre", updates.nombre);
-    if (updates.url_imagen) bolsa.set("url_imagen", updates.url_imagen);
-    if (updates.precio) bolsa.set("precio", parseFloat(updates.precio));
-    if (updates.variacionPrecio) bolsa.set("variacionPrecio", parseFloat(updates.variacionPrecio));
+    if (updates.codigo) bolsa.set("Codigo", updates.codigo);
+    if (updates.empresa) bolsa.set("Empresa", updates.empresa);
+    if (updates.nombre) bolsa.set("Nombre", updates.nombre);
+    if (updates.url_imagen) bolsa.set("URLImagen", updates.url_imagen);
+    if (updates.precio) bolsa.set("Precio", parseFloat(updates.precio));
+    if (updates.VariacionPrecioDiario) bolsa.set("VariacionPrecioDiario", parseFloat(updates.VariacionPrecioDiario));
 
     const saved = await bolsa.save(null, { useMasterKey: true });
 
     return new BolsaModel(
       saved.id,
-      saved.get("codigo"),
-      saved.get("empresa"),
-      saved.get("nombre"),
-      saved.get("url_imagen"),
-      saved.get("precio"),
-      saved.get("variacionPrecio"),
+      saved.get("Codigo"),
+      saved.get("Empresa"),
+      saved.get("Nombre"),
+      saved.get("URLImagen"),
+      saved.get("Precio"),
+      saved.get("VariacionPrecioDiario"),
       saved.get("createdAt"),
       saved.get("updatedAt")
     );

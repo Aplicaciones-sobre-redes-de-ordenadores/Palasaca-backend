@@ -4,7 +4,7 @@ const CryptoModel = require("../models/CryptoModel");
 // Obtener todas las criptomonedas
 const getAllCryptos = async () => {
   try {
-    const Crypto = Parse.Object.extend("Criptomonedas");
+    const Crypto = Parse.Object.extend("Crypto");
     const query = new Parse.Query(Crypto);
     query.descending("createdAt");
 
@@ -12,9 +12,9 @@ const getAllCryptos = async () => {
 
     return results.map(c => new CryptoModel(
       c.id,
-      c.get("simbolo"),
-      c.get("precio"),
-      c.get("variacionPrecio"),
+      c.get("Simbolo"),
+      c.get("Precio"),
+      c.get("VariacionPrecio"),
       c.get("createdAt"),
       c.get("updatedAt")
     ));
@@ -30,17 +30,17 @@ const createCrypto = async (data) => {
     const Crypto = Parse.Object.extend("Criptomonedas");
     const crypto = new Crypto();
 
-    crypto.set("simbolo", data.simbolo);
-    crypto.set("precio", parseFloat(data.precio));
-    crypto.set("variacionPrecio", parseFloat(data.variacionPrecio || 0));
+    crypto.set("Simbolo", data.simbolo);
+    crypto.set("Precio", parseFloat(data.precio));
+    crypto.set("VariacionPrecio", parseFloat(data.VariacionPrecio || 0));
 
     const saved = await crypto.save(null, { useMasterKey: true });
 
     return new CryptoModel(
       saved.id,
-      saved.get("simbolo"),
-      saved.get("precio"),
-      saved.get("variacionPrecio"),
+      saved.get("Simbolo"),
+      saved.get("Precio"),
+      saved.get("VariacionPrecio"),
       saved.get("createdAt"),
       saved.get("updatedAt")
     );
@@ -59,9 +59,9 @@ const getCryptoById = async (id) => {
 
     return new CryptoModel(
       result.id,
-      result.get("simbolo"),
-      result.get("precio"),
-      result.get("variacionPrecio"),
+      result.get("Simbolo"),
+      result.get("Precio"),
+      result.get("VariacionPrecio"),
       result.get("createdAt"),
       result.get("updatedAt")
     );
@@ -80,15 +80,15 @@ const updateCrypto = async (id, updates) => {
 
     if (updates.simbolo) crypto.set("simbolo", updates.simbolo);
     if (updates.precio) crypto.set("precio", parseFloat(updates.precio));
-    if (updates.variacionPrecio) crypto.set("variacionPrecio", parseFloat(updates.variacionPrecio));
+    if (updates.VariacionPrecio) crypto.set("VariacionPrecio", parseFloat(updates.VariacionPrecio));
 
     const saved = await crypto.save(null, { useMasterKey: true });
 
     return new CryptoModel(
       saved.id,
-      saved.get("simbolo"),
-      saved.get("precio"),
-      saved.get("variacionPrecio"),
+      saved.get("Simbolo"),
+      saved.get("Precio"),
+      saved.get("VariacionPrecio"),
       saved.get("createdAt"),
       saved.get("updatedAt")
     );

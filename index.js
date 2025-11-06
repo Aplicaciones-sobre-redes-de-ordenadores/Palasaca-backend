@@ -74,21 +74,26 @@ function listRoutes(app) {
 
 function printRoutesFromStack(stack) {
   let routeCount = 0;
-  
+
   stack.forEach(layer => {
-    // Rutas directas
+    // Rutas directas (por ejemplo GET /)
     if (layer.route) {
-      const methods = Object.keys(layer.route.methods).join(',').toUpperCase();
+      const methods = Object.keys(layer.route.methods)
+        .map(m => m.toUpperCase())
+        .join(',');
       console.log(`${methods} ${layer.route.path}`);
       routeCount++;
     }
-    // Router montado (como userRoutes)
+
+    // Routers montados (como /users, /cryptos, /bolsas)
     else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
-      const basePath = findBasePath(layer) || '/api/users';
-      
+      const basePath = getBasePathFromRegexp(layer.regexp);
+
       layer.handle.stack.forEach(sublayer => {
         if (sublayer.route) {
-          const methods = Object.keys(sublayer.route.methods).join(',').toUpperCase();
+          const methods = Object.keys(sublayer.route.methods)
+            .map(m => m.toUpperCase())
+            .join(',');
           const fullPath = basePath + (sublayer.route.path === '/' ? '' : sublayer.route.path);
           console.log(`${methods} ${fullPath}`);
           routeCount++;
@@ -96,18 +101,38 @@ function printRoutesFromStack(stack) {
       });
     }
   });
-  
-  if (routeCount === 0) {
-    console.log('No routes found in the stack');
-  } else {
-    console.log(`Total routes found: ${routeCount}`);
-  }
+
+  console.log(`Total routes found: ${routeCount}`);
 }
 
-function findBasePath(layer) {
-  // Intentar encontrar el path base del router montado
-  if (layer.regexp && layer.regexp.fast_slash) {
-    return '';
+function getBasePathFromRegexp(regexp) {
+  if (!regexp) return '';
+
+  // Get the raw source of the regex, e.g., "^\/users\/?(?=\/|$)"
+  const source = regexp.source;
+
+  // This new regex matches the path part from the beginning.
+  // It looks for "^\\/" (start marker), then captures one or more
+  // non-slash characters ([^\\/]+).
+  const match = source.match(/^\^\\\/([^\\/]+)/);
+
+  if (match && match[1]) {
+    // match[1] will be "users" or "accounts", etc.
+    return `/${match[1]}`;
   }
-  return '/users'; // Fallback al path que sabemos
+
+  return ''; // Failed to find a base path
+}
+
+
+function findBasePath(layer) {
+  if (!layer.regexp || !layer.regexp.source) return '';
+
+  // Intenta extraer el path base del regex interno
+  const match = layer.regexp.source.match(/\\\/([a-zA-Z0-9-_]+)/);
+  if (match && match[1]) {
+    return `/${match[1]}`;
+  }
+
+  return '';
 }
