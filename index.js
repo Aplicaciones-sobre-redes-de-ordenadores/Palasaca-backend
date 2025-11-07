@@ -1,8 +1,15 @@
+// index.js
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
-const app = require("./src/app");
 
-console.log("Puerto:", process.env.PORT); 
+// Carga .env SOLO en local (en Render ya hay env vars)
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'staging') {
+  // Busca .env en la raíz del proyecto
+  require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
+}
+
+const app = require('./src/app');
+
+console.log('PORT env:', process.env.PORT || '(no definido)');
 
 // --- Logger de peticiones ---
 app.use((req, res, next) => {
@@ -10,63 +17,76 @@ app.use((req, res, next) => {
   next();
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en puerto ${PORT}`)
-    
-    // Listar rutas después de la inicialización
-    setTimeout(() => {
-        listRoutes(app);
-    }, 100);
+// --- Ruta de salud para comprobar que vive ---
+app.get('/', (_req, res) => {
+  res.json({ ok: true, env: process.env.NODE_ENV || 'dev' });
 });
 
+// --- Arranque del servidor ---
+// En Render hay que escuchar process.env.PORT y bind a 0.0.0.0
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 
-// --- Función para listar rutas ---
+  // Listar rutas después de la inicialización
+  setTimeout(() => {
+    listRoutes(app);
+  }, 100);
+});
+
+// --- Manejo de errores no capturados (para que queden en logs y no mate el proceso) ---
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+});
+
+// === Utilidades para listar rutas (debug) ===
 function listRoutes(app) {
   try {
     console.log('\n=== Listing Registered Routes ===');
-    
-    // Método 1: Intentar con app._router (legacy)
+
+    // Método 1: app._router (legacy)
     if (app._router && app._router.stack) {
       console.log('Using app._router (legacy method)');
       printRoutesFromStack(app._router.stack);
       return;
     }
-    
-    // Método 2: Intentar con app.routes (alternativo)
+
+    // Método 2: app.routes (alternativo)
     if (app.routes) {
       console.log('Using app.routes (alternative method)');
       console.log(app.routes);
       return;
     }
-    
+
     // Método 3: Buscar router en diferentes propiedades
     const possibleRouterPaths = ['_router', 'router', 'stack'];
-    for (const path of possibleRouterPaths) {
-      if (app[path] && Array.isArray(app[path].stack)) {
-        console.log(`Using app.${path}.stack`);
-        printRoutesFromStack(app[path].stack);
+    for (const p of possibleRouterPaths) {
+      if (app[p] && Array.isArray(app[p].stack)) {
+        console.log(`Using app.${p}.stack`);
+        printRoutesFromStack(app[p].stack);
         return;
       }
     }
-    
-    // Método 4: Usar express-list-endpoints
+
+    // Método 4: express-list-endpoints (si está instalado)
     try {
       const listEndpoints = require('express-list-endpoints');
       const endpoints = listEndpoints(app);
       if (endpoints.length > 0) {
         console.log('Using express-list-endpoints package:');
-        endpoints.forEach(endpoint => {
+        endpoints.forEach((endpoint) => {
           console.log(`${endpoint.methods.join(',')} ${endpoint.path}`);
         });
         return;
       }
-    } catch (e) {
+    } catch (_e) {
       console.log('express-list-endpoints not available');
     }
-    
+
     console.log('No routes could be detected with any method');
-    
   } catch (e) {
     console.warn('Error listing routes:', e.message);
   }
@@ -74,8 +94,8 @@ function listRoutes(app) {
 
 function printRoutesFromStack(stack) {
   let routeCount = 0;
-  
-  stack.forEach(layer => {
+
+  stack.forEach((layer) => {
     // Rutas directas
     if (layer.route) {
       const methods = Object.keys(layer.route.methods).join(',').toUpperCase();
@@ -85,8 +105,7 @@ function printRoutesFromStack(stack) {
     // Router montado (como userRoutes)
     else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
       const basePath = findBasePath(layer) || '/api/users';
-      
-      layer.handle.stack.forEach(sublayer => {
+      layer.handle.stack.forEach((sublayer) => {
         if (sublayer.route) {
           const methods = Object.keys(sublayer.route.methods).join(',').toUpperCase();
           const fullPath = basePath + (sublayer.route.path === '/' ? '' : sublayer.route.path);
@@ -96,7 +115,7 @@ function printRoutesFromStack(stack) {
       });
     }
   });
-  
+
   if (routeCount === 0) {
     console.log('No routes found in the stack');
   } else {
