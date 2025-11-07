@@ -97,6 +97,36 @@ const updatePaymentStatus = async (paymentId, newStatus) => {
   }
 };
 
+const updateReminder = async (paymentId) => {
+  try {
+    if (!paymentId) {
+      console.error("Error: Payment ID es 'undefined' en req.params.");
+      return res.status(400).json({
+        success: false,
+        error: "Payment ID es requerido en la ruta. Asegúrate de que el frontend lo esté enviando correctamente."
+      });
+    }
+    const query = new Parse.Query(Payment);
+    const payment = await query.get(paymentId, { useMasterKey: true });
+
+    if (!payment) {
+      throw new Error("Pago no encontrado");
+    }
+
+    const currentReminder = payment.get("recordatorio");
+    payment.set("recordatorio", !currentReminder);
+    const savedPayment = await payment.save(null, { useMasterKey: true });
+    
+    const accountId = payment.get("id_cuenta").id;
+    savedPayment.set("id_cuenta", new Parse.Object("Cuentas", { id: accountId }));
+    return mapToModel(savedPayment);
+  } catch (error) {
+    console.error("Error al actualizar estado del pago:", error);
+    throw error;
+  }
+};
+
+
 const deletePayment = async (paymentId) => {
   try {
     const query = new Parse.Query(Payment);
@@ -154,4 +184,5 @@ module.exports = {
   updatePaymentStatus,
   deletePayment,
   checkAndSetOverduePayments,
+  updateReminder
 };
