@@ -21,7 +21,7 @@ const getPaymentsByAccount = async (req, res) => {
   }
 };
 
-// POST /api/payments
+// POST /payments
 const createPayment = async (req, res) => {
   try {
     const { accountId, nombre, importe, tipo, fecha_limite, recordatorio, Comentarios } = req.body;
@@ -90,6 +90,24 @@ const updatePaymentStatus = async (req, res) => {
   }
 };
 
+const updatePaymentReminder = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const { recordatorio } = req.body;
+
+    const updatedPayment = await paymentService.updateReminder(paymentId);
+
+    res.json({
+      success: true,
+      message: "Recordatorio de pago actualizado exitosamente.",
+      payment: updatedPayment.toJSON()
+    });
+  } catch (error) {
+    console.error("Error en updatePaymentReminder:", error);
+    res.status(404).json({ success: false, error: error.message });
+  }
+};
+
 // DELETE /api/payments/:paymentId
 const deletePayment = async (req, res) => {
   try {
@@ -126,5 +144,6 @@ module.exports = {
   getPaymentsByAccount,
   createPayment,
   updatePaymentStatus,
-  deletePayment
+  deletePayment,
+  updatePaymentReminder
 };
