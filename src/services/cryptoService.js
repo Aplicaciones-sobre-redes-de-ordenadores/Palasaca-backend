@@ -27,7 +27,7 @@ const getAllCryptos = async () => {
 // Crear una nueva criptomoneda
 const createCrypto = async (data) => {
   try {
-    const Crypto = Parse.Object.extend("Criptomonedas");
+    const Crypto = Parse.Object.extend("Crypto");
     const crypto = new Crypto();
 
     crypto.set("Simbolo", data.simbolo);
@@ -53,7 +53,7 @@ const createCrypto = async (data) => {
 // Obtener una criptomoneda por ID
 const getCryptoById = async (id) => {
   try {
-    const Crypto = Parse.Object.extend("Criptomonedas");
+    const Crypto = Parse.Object.extend("Crypto");
     const query = new Parse.Query(Crypto);
     const result = await query.get(id, { useMasterKey: true });
 
@@ -74,7 +74,7 @@ const getCryptoById = async (id) => {
 // Actualizar una criptomoneda
 const updateCrypto = async (id, updates) => {
   try {
-    const Crypto = Parse.Object.extend("Criptomonedas");
+    const Crypto = Parse.Object.extend("Crypto");
     const query = new Parse.Query(Crypto);
     const crypto = await query.get(id, { useMasterKey: true });
 
@@ -101,7 +101,7 @@ const updateCrypto = async (id, updates) => {
 // Eliminar una criptomoneda
 const deleteCrypto = async (id) => {
   try {
-    const Crypto = Parse.Object.extend("Criptomonedas");
+    const Crypto = Parse.Object.extend("Crypto");
     const query = new Parse.Query(Crypto);
     const crypto = await query.get(id, { useMasterKey: true });
     await crypto.destroy({ useMasterKey: true });
