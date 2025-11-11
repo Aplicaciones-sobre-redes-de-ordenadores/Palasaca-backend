@@ -8,6 +8,7 @@ const {
   updateUser,
   deleteUser,
   getUserID,
+  getUserById
 } = require('../controllers/userController');
 
 
@@ -17,6 +18,6 @@ router.get('/email/:email', getUserByEmail);
 router.put('/:id', updateUser);           
 router.delete('/:id', deleteUser); 
 router.post("/getUserID",middlewares.authMiddleware("admin"),getUserID);
-
+router.get('/:id', getUserById);
 
 module.exports = router;

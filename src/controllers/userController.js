@@ -59,17 +59,46 @@ const getUserByEmail = async (req, res) => {
 
 // PUT /users/:id
 const updateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: "name is required" });
-    }
-    const updatedUser = await userService.updateUser(id, name);
-    res.json(updatedUser.toJSON());
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+  try {
+    const { id } = req.params;
+    const { name, email, password } = req.body;
+
+    // Construir un objeto solo con los campos que el usuario envió
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (password) updateData.password = password; // El servicio se encargará de encriptar
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: "No se proporcionaron datos para actualizar" 
+      });
+    }
+
+    const updatedUser = await userService.updateUser(id, updateData);
+    res.status(200).json({
+      success: true,
+      user: updatedUser.toJSON()
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+
+// AÑADE esta nueva función controladora
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await userService.getUserById(id);
+    if (user) {
+      res.json(user.toJSON());
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 
@@ -98,4 +127,4 @@ const getUserID = async (req, res) => {
 };
 
 
-module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser};
+module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser, getUserById};

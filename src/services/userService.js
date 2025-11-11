@@ -78,17 +78,52 @@ const findUserByEmail = async (email) => {
 };
 
 // Actualizar nombre de usuario filtrando por objectId de la BBDD:Usuarios
-const updateUser = async (objectId, newName) => {
-  const User = Parse.Object.extend("Usuarios");
-  const query = new Parse.Query(User);
+const updateUser = async (objectId, updateData) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
 
-  const user = await query.get(objectId, { useMasterKey: true });
-  if (!user) throw new Error("User not found");
+  try {
+    const user = await query.get(objectId, { useMasterKey: true });
+    if (!user) throw new Error("User not found");
 
-  user.set("Nombre", newName);
-  await user.save(null,{ useMasterKey: true });
+    // Actualizar campos si se proporcionan
+    if (updateData.name) {
+      user.set("Nombre", updateData.name);
+    }
+    if (updateData.email) {
+      // Opcional: podrías querer verificar si el nuevo email ya existe
+      user.set("Correo", updateData.email);
+    }
+    
+    // Si se proporciona una nueva contraseña, encriptarla
+    if (updateData.password) {
+      const hashedPassword = await bcrypt.hash(updateData.password, 10);
+      user.set("PassWord", hashedPassword);
+    }
 
-  return new UserModel(user.get("Nombre"), user.get("Correo"));
+    await user.save(null, { useMasterKey: true });
+
+    return new UserModel(user.get("Nombre"), user.get("Correo"));
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
+const getUserById = async (objectId) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
+  try {
+    const user = await query.get(objectId, { useMasterKey: true });
+    if (user) {
+      return new UserModel(user.get("Nombre"), user.get("Correo"));
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting user by ID:", error);
+    throw new Error("User not found");
+  }
 };
 
 // Eliminar usuario usando su objectId en BBDD:Usuarios
@@ -122,4 +157,4 @@ const getUserObjectId = async (email, password) => {
   return result.id;
 };
 
-module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUser, deleteUser };
+module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUser, deleteUser,getUserById};
