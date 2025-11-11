@@ -105,4 +105,45 @@ const getUserID = async (req, res) => {
 };
 
 
-module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser};
+// PUT /users/email/:id
+const updateUserEmail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newEmail } = req.body;
+    const updatedUser = await userService.updateUserEmail(id, newEmail);
+    res.json(updatedUser.toJSON());
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// PUT /users/password/:id
+const updateUserPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { checkPassword, newPassword } = req.body;
+    if (!checkPassword || !newPassword) {
+      return res.status(400).json({ message: "checkPassword and newPassword are required" });
+    }
+
+    const updatedUser = await userService.updateUserPassword(id, checkPassword, newPassword);
+    res.json(updatedUser.toJSON());
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// GET /users/:id
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await userService.getUserById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user.toJSON());
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser, updateUserEmail, updateUserPassword, getUserById };
