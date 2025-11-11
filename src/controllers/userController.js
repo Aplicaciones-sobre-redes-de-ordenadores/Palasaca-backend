@@ -62,15 +62,22 @@ const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, checkPassword, newPassword } = req.body;
-    let updatedUser = "";
+    let updatedUser;
 
     if (name) {
       updatedUser = await userService.updateUserName(id, name);
     }
-    if (checkPassword && newPassword){
-      updatedUser = await userService.updateUserPassword(id, checkPassword , newPassword);
-    } else {
-      res.status(404).json({ message: "checkPassword and newPassword needed to change the password" });
+
+    if (checkPassword && newPassword) {
+      updatedUser = await userService.updateUserPassword(id, checkPassword, newPassword);
+    } else if (checkPassword || newPassword) {
+      // Si solo se proporciona uno de los dos, devolver error
+      return res.status(400).json({ message: "Both checkPassword and newPassword are required to change the password" });
+    }
+
+    // Si no se actualizó nada, devolver un mensaje
+    if (!updatedUser) {
+      return res.status(400).json({ message: "No fields to update" });
     }
 
     res.json(updatedUser.toJSON());
