@@ -1,4 +1,5 @@
 const objetivosService = require("../services/objectivesService"); 
+const Parse = require('parse/node');
 
 // GET /objetivos/cuenta/:accountId
 const getObjetivosByAccount = async (req, res) => {
