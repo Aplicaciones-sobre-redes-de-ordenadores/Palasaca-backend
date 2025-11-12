@@ -33,7 +33,7 @@ app.use('/login', loginRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/cryptos', cryptoRoutes);
 app.use('/bolsas', bolsaRoutes);
-app.use('/objetivos', objectiveRoutes);
+app.use('/objectives', objectiveRoutes);
 
 // --- Ruta no encontrada (404) ---
 app.use((req, res, next) => {
