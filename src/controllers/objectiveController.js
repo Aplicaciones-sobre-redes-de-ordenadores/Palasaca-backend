@@ -110,9 +110,25 @@ const updateObjetivoProgress = async (req, res) => {
 const deleteObjetivo = async (req, res) => {
   try {
     const { id } = req.params;
-    await Objetivo.findByIdAndDelete(id);
-    res.json({ success: true, message: 'Objetivo eliminado' });
+    if (!id) {
+      return res.status(400).json({ success: false, error: "Objective ID is required" });
+    }
+
+    const Objetivo = Parse.Object.extend("Objetivos");
+    const query = new Parse.Query(Objetivo);
+
+    // Obtener el objetivo
+    const objetivo = await query.get(id, { useMasterKey: true });
+    if (!objetivo) {
+      return res.status(404).json({ success: false, error: "Objective not found" });
+    }
+
+    // Eliminarlo
+    await objetivo.destroy({ useMasterKey: true });
+
+    res.json({ success: true, message: "Objetivo eliminado" });
   } catch (error) {
+    console.error("Error deleting objective:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
