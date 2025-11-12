@@ -7,7 +7,7 @@ const {
   createObjetivo,
   updateObjetivoProgress,
   deleteObjetivo
-} = require('../controllers/objetivosController');
+} = require('../controllers/objectiveController');
 
 // Obtener todos los objetivos de una cuenta
 router.get('/cuenta/:idCuenta', getObjetivosByAccount);

@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const accountRoutes = require('./routes/accountRoutes');
+const objectiveRoutes = require('./routes/objectiveRoutes');
 const movementRoutes = require('./routes/movementRoutes');
 const loginRoutes = require('./routes/loginRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
@@ -32,6 +33,7 @@ app.use('/login', loginRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/cryptos', cryptoRoutes);
 app.use('/bolsas', bolsaRoutes);
+app.use('/objetivos', objectiveRoutes);
 
 // --- Ruta no encontrada (404) ---
 app.use((req, res, next) => {

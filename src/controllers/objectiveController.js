@@ -1,4 +1,4 @@
-const objetivosService = require("../services/objetivesService"); 
+const objetivosService = require("../services/objectivesService"); 
 
 // GET /objetivos/cuenta/:accountId
 const getObjetivosByAccount = async (req, res) => {
@@ -106,8 +106,20 @@ const updateObjetivoProgress = async (req, res) => {
   }
 };
 
+
+const deleteObjetivo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Objetivo.findByIdAndDelete(id);
+    res.json({ success: true, message: 'Objetivo eliminado' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 module.exports = {
   getObjetivosByAccount,
   createObjetivo,
-  updateObjetivoProgress
+  updateObjetivoProgress,
+  deleteObjetivo
 };
