@@ -10,10 +10,6 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
-    volumes:
-      - .:/usr/src/app
-    # 👇 Ya no hace falta poner "command: npm run dev"
-    # porque el Dockerfile arranca con CMD ["npm", "run", "dev"]
 
   mongo:
     image: mongo:6
@@ -23,7 +19,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: palasaca_test
+      MONGO_INITDB_DATABASE: palasaca_prod
     volumes:
       - mongo-data:/data/db
 
@@ -31,12 +27,10 @@ services:
     image: parseplatform/parse-server
     container_name: palasaca-parse
     environment:
-      - PARSE_SERVER_APPLICATION_ID=FHOjv9gkudByyYt0LxLYs847TkNy6CjyPBm1Grh2
-      - PARSE_SERVER_MASTER_KEY=CWtlf20m4zcdykfUNGSqDqbZKw1AwbJc1hTuxQXD
-      - PARSE_SERVER_DATABASE_URI=mongodb://root:example@mongo:27017/palasaca_test?authSource=admin
+      - PARSE_SERVER_APPLICATION_ID=xxxx
+      - PARSE_SERVER_MASTER_KEY=xxxx
+      - PARSE_SERVER_DATABASE_URI=mongodb://root:example@mongo:27017/palasaca_prod?authSource=admin
       - PARSE_SERVER_URL=http://0.0.0.0:1337/parse
-      - PARSE_SERVER_ALLOW_INSECURE_MASTER_KEY=1
-      - PARSE_SERVER_MASTER_KEY_IPS=172.0.0.0/8,127.0.0.1
     ports:
       - "1337:1337"
     depends_on:
