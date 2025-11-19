@@ -1,7 +1,12 @@
 name: CD Pipeline
 
 on:
-  workflow_call: 
+  workflow_call:
+    secrets:
+      DOCKERHUBUSERNAME:
+        required: true
+      DOCKERHUBPASSWORD:
+        required: true
 
 jobs:
   docker-build-and-push:
