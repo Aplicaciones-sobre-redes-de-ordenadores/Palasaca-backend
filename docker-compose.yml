@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   backend:
-    build: .
+    image: palasacapp/palasaca-backend:latest
     container_name: palasaca-backend
     env_file:
       - .env.dev
