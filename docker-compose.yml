@@ -12,7 +12,8 @@ services:
       - mongo
     volumes:
       - .:/usr/src/app
-    command: npm run dev
+    # 👇 Ya no hace falta poner "command: npm run dev"
+    # porque el Dockerfile arranca con CMD ["npm", "run", "dev"]
 
   mongo:
     image: mongo:6
