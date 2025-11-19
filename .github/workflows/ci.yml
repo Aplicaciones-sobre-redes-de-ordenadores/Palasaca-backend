@@ -43,3 +43,6 @@ jobs:
   trigger-cd:
     needs: build-and-test   # <-- solo se ejecuta si CI pasa
     uses: ./.github/workflows/cd.yml
+    secrets:
+      DOCKERHUBUSERNAME: ${{ secrets.DOCKERHUBUSERNAME }}
+      DOCKERHUBPASSWORD: ${{ secrets.DOCKERHUBPASSWORD }}
