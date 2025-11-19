@@ -1,0 +1,41 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:6
+        ports:
+          - 27017:27017
+      parse:
+        image: parseplatform/parse-server
+        ports:
+          - 1337:1337
+        env:
+          PARSE_SERVER_APPLICATION_ID: testAppId
+          PARSE_SERVER_MASTER_KEY: testMasterKey
+          PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
+          PARSE_SERVER_URL: http://localhost:1337/parse
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --include=dev
+
+      - name: Run tests
+        run: npm test
