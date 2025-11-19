@@ -3,7 +3,6 @@ name: CD Pipeline
 on:
   workflow_run:
     workflows: ["CI Pipeline"]   # nombre exacto del workflow CI
-    branches: [ dockerSaul ]
     types:
       - completed
 
