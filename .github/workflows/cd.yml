@@ -1,23 +1,13 @@
 name: CD Pipeline
 
 on:
-  workflow_run:
-    workflows: ["CI Pipeline"]   # nombre exacto del workflow CI
-    types:
-      - completed
+  workflow_call: 
 
 jobs:
   docker-build-and-push:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug workflow_run info
-        run: |
-          echo "Workflow name: ${{ github.event.workflow_run.workflow_id }}"
-          echo "Branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Conclusion: ${{ github.event.workflow_run.conclusion }}"
-
       - name: Checkout code
         uses: actions/checkout@v4
 

@@ -39,3 +39,7 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  trigger-cd:
+    needs: build-and-test   # <-- solo se ejecuta si CI pasa
+    uses: ./.github/workflows/cd.yml
