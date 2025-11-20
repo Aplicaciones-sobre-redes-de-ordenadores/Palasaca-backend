@@ -215,4 +215,34 @@ describe('accountController', () => {
     });
   });
 
+  test('getAccountById devuelve 404 si falta accountId', async () => {
+    accountService.getAccountById.mockResolvedValue(null);
+
+    const req = { params: { accountId: 'acc1' } };
+    const res = mockResponse();
+
+    await getAccountById(req, res);
+    expect(accountService.getAccountById).toHaveBeenCalledWith( 'acc1' );
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Account not found',
+    });
+  });
+
+  test('getAccountById devuelve 500 si hay error', async () => {
+    accountService.getAccountById.mockRejectedValue(new Error('db error'));
+
+    const req = { params: { accountId: 'user1' } };
+    const res = mockResponse();
+
+    await getAccountById(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ success: false, 
+                                            error: 'db error' 
+    });
+  });
+
 });
