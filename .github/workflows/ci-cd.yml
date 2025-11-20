@@ -2,7 +2,7 @@ name: CI+CD Pipeline
 
 on:
   push:
-    branches: [ dockerSaul ]
+    branches: [ dockerSaul tests-backend-HualdeJuarez]
   pull_request:
     branches: [ dockerSaul ]
 
