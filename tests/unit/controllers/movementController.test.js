@@ -1,5 +1,4 @@
 // tests/unit/controllers/movementController.test.js
-
 const {
   getMovementsByAccount,
   createMovement,
@@ -296,7 +295,7 @@ describe('movementController', () => {
       });
     });
 
-    test('devuelve 400 si el servicio lanza un error', async () => {
+    test('devuelve 500 si el servicio lanza un error', async () => {
       movementService.createMovement.mockRejectedValue(new Error('create error'));
 
       const req = {
@@ -310,14 +309,14 @@ describe('movementController', () => {
 
       await createMovement(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'create error',
       });
     });
 
-    test('devuelve 400 si falla la actualización de saldo', async () => {
+    test('devuelve 500 si falla la actualización de saldo', async () => {
       const fakeMovement = {
         toJSON: () => ({
           id_movimiento: 'm3',
@@ -350,7 +349,7 @@ describe('movementController', () => {
 
       expect(movementService.createMovement).toHaveBeenCalled();
       expect(movementService.updateAccountBalance).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'balance error',

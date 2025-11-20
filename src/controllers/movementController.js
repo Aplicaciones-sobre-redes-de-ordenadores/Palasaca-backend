@@ -80,7 +80,7 @@ const createMovement = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in createMovement:", error);
-    res.status(400).json({ 
+    res.status(500).json({ 
       success: false,
       error: error.message 
     });
