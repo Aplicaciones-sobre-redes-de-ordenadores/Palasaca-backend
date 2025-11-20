@@ -1,4 +1,4 @@
-const objetivosService = require("../services/objetivesService"); 
+const objetivosService = require("../services/objectivesService"); 
 
 // GET /objetivos/cuenta/:accountId
 const getObjetivosByAccount = async (req, res) => {
