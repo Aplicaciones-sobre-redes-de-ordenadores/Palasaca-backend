@@ -11,6 +11,14 @@ const mockResponse = () => {
   return res;
 };
 
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  console.error.mockRestore();
+});
+
 describe('loginUserController', () => {
   test('devuelve success y user si las credenciales son correctas', async () => {
     userService.getUserObjectId = jest.fn().mockResolvedValue('abc123');
