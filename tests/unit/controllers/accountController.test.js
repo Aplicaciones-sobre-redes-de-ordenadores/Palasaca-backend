@@ -36,7 +36,7 @@ describe('accountController', () => {
     jest.clearAllMocks();
   });
 
-  test('getAccountsByUser devuelve la cuenta del Usuario', async () => {
+  test('getAccountsByUser devuelve las cuentas del Usuario', async () => {
     const fakeAccounts = [
         {
             toJSON: () => ({
@@ -67,7 +67,8 @@ describe('accountController', () => {
 
     await getAccountsByUser(req, res);
 
-    expect(accountService.getAccountsByUser).toHaveBeenCalled();
+    expect(accountService.getAccountsByUser).toHaveBeenCalledWith('user1');
+
     expect(res.json).toHaveBeenCalledWith({
         success: true,
         accounts: [
@@ -115,6 +116,41 @@ describe('accountController', () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ success: false, 
                                             error: 'db error' 
+    });
+  });
+
+  test('createAccount crea la cuenta del Usuario', async () => {
+    const fakeAccounts = {
+            toJSON: () => ({
+                id_cuenta: 'acc1',
+                id_usuario: 'user1',
+                NombreCuenta: 'Cuenta 1',
+                Dinero: 1000,
+                createdAt: '2024-01-01',
+                updatedAt: '2024-01-02',
+            }),
+        };
+
+    accountService.createAccount.mockResolvedValue(fakeAccounts);
+
+    const req = {body: { userId: 'user1' , accountName: 'Ahorro', initialBalance: 1500 }};
+    const res = mockResponse();
+
+    await createAccount(req, res);
+    expect(accountService.createAccount).toHaveBeenCalledWith('user1', 'Ahorro', 1500);
+
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Account created successfully",
+        account: {
+            id_cuenta: 'acc1',
+            id_usuario: 'user1',
+            NombreCuenta: 'Cuenta 1',
+            Dinero: 1000,
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-02',
+        },
     });
   });
 
