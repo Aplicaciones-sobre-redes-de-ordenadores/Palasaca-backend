@@ -1,7 +1,7 @@
 const {
   getAccountsByUser,
     createAccount,
-    getAccount,
+    getAccountById,
     updateAccount,
     deleteAccount,
 } = require('../../../src/controllers/accountController');
@@ -9,7 +9,7 @@ const {
 jest.mock('../../../src/services/accountService', () => ({
   getAccountsByUser: jest.fn(),
   createAccount: jest.fn(),
-  getAccount: jest.fn(),
+  getAccountById: jest.fn(),
   updateAccount: jest.fn(),
   deleteAccount: jest.fn(),
 }));
@@ -143,6 +143,67 @@ describe('accountController', () => {
     expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Account created successfully",
+        account: {
+            id_cuenta: 'acc1',
+            id_usuario: 'user1',
+            NombreCuenta: 'Cuenta 1',
+            Dinero: 1000,
+            createdAt: '2024-01-01',
+            updatedAt: '2024-01-02',
+        },
+    });
+  });
+
+  test('createAccount devuelve 400 si falta userId o accountName', async () => {
+    const req = {body: { accountName: 'Ahorro' }};
+    const res = mockResponse();
+
+    await createAccount(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: "User ID and account name are required",
+    });
+  });
+
+  test('createAccount devuelve 500 si hay error', async () => {
+    accountService.createAccount.mockRejectedValue(new Error('db error'));
+
+    const req = {body: { userId: 'user1' , accountName: 'Ahorro', initialBalance: 1500 }};
+    const res = mockResponse();
+
+    await createAccount(req, res);
+    expect(accountService.createAccount).toHaveBeenCalledWith('user1', 'Ahorro', 1500);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ success: false, 
+                                            error: 'db error' 
+    });
+  });
+
+  test('getAccountById devuelve la cuenta del Usuario por accountId', async () => {
+    const fakeAccounts = {
+            toJSON: () => ({
+                id_cuenta: 'acc1',
+                id_usuario: 'user1',
+                NombreCuenta: 'Cuenta 1',
+                Dinero: 1000,
+                createdAt: '2024-01-01',
+                updatedAt: '2024-01-02',
+            }),
+        };
+
+    accountService.getAccountById.mockResolvedValue(fakeAccounts);
+
+    const req = { params: { accountId: 'acc1' }};
+    const res = mockResponse();
+
+    await getAccountById(req, res);
+    expect(accountService.getAccountById).toHaveBeenCalledWith( 'acc1' );
+
+    expect(res.json).toHaveBeenCalledWith({
+        success: true,
         account: {
             id_cuenta: 'acc1',
             id_usuario: 'user1',
