@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const middlewares = require("../middlewares/authMiddleware");
+const rateLimit = require('express-rate-limit');
 
 const {
   getObjetivosByAccount,
@@ -22,6 +23,10 @@ router.put('/:id', updateObjetivoProgress);
 router.delete('/:id', deleteObjetivo);
 
 // Ejemplo de ruta protegida (solo admin o usuario autenticado)
-router.get('/protegido/:idCuenta', middlewares.authMiddleware("admin"), getObjetivosByAccount);
-
+const objetivoProtegidoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
+  message: "Too many requests, please try again later."
+});
+router.get('/protegido/:idCuenta', objetivoProtegidoLimiter, middlewares.authMiddleware("admin"), getObjetivosByAccount);
 module.exports = router;
