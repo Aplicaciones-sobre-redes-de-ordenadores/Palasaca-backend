@@ -31,3 +31,4 @@ class Objetivo {
   }
 }
 
+module.exports = Objetivo;
