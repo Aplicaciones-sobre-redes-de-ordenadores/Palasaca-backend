@@ -109,16 +109,6 @@ const updateUserPassword = async (objectId, checkPassword, newPassword) => {
   return new UserModel(user.get("Nombre"), user.get("Correo"));
 };
 
-const updateUserEmail = async (objectId, newEmail) => {
-  const User = Parse.Object.extend("Usuarios");
-  const query = new Parse.Query(User);
-  const user = await query.get(objectId, { useMasterKey: true });
-  if (!user) throw new Error("User not found");
-  user.set("Correo", newEmail);
-  await user.save(null,{ useMasterKey: true });
-  return new UserModel(user.get("Nombre"), user.get("Correo"));
-};
-
 // Eliminar usuario usando su objectId en BBDD:Usuarios
 const deleteUser = async (objectId) => {
   const User = Parse.Object.extend("Usuarios");
@@ -159,20 +149,4 @@ const compareUsersPassword = async (passwordDB, password) => {
 };
 
 
-
-const getUserById = async (objectId) => {
-  const User = Parse.Object.extend("Usuarios");
-  const query = new Parse.Query(User);
-  try {
-    const user = await query.get(objectId, { useMasterKey: true });
-    if (user) {
-      return new UserModel(user.get("Nombre"), user.get("Correo"));
-    } else {
-      return null;
-    }
-  } catch (error) {
-    throw new Error("User not found");
-  }
-};
-
-module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUserName, updateUserPassword, deleteUser, updateUserEmail, getUserById };
+module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUserName, updateUserPassword, deleteUser };

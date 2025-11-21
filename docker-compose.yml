@@ -1,0 +1,40 @@
+version: '3.9'
+
+services:
+  backend:
+    build: .
+    container_name: palasaca-backend
+    env_file:
+      - .env.dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6
+    container_name: palasaca-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: palasaca_prod
+    volumes:
+      - mongo-data:/data/db
+
+  parse:
+    image: parseplatform/parse-server
+    container_name: palasaca-parse
+    environment:
+      - PARSE_SERVER_APPLICATION_ID=xxxx
+      - PARSE_SERVER_MASTER_KEY=xxxx
+      - PARSE_SERVER_DATABASE_URI=mongodb://root:example@mongo:27017/palasaca_prod?authSource=admin
+      - PARSE_SERVER_URL=http://0.0.0.0:1337/parse
+    ports:
+      - "1337:1337"
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

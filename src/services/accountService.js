@@ -1,7 +1,6 @@
+// src/services/accountService.js
 const Parse = require("../config/parseConfig");
 const AccountModel = require("../models/AccountModel");
-
-
 
 // Obtener todas las cuentas de un usuario
 const getAccountsByUser = async (userId) => {
