@@ -2,9 +2,11 @@ name: CI+CD Pipeline
 
 on:
   push:
-    branches: [ dockerSaul ]
+    branches:
+      - '**'  
   pull_request:
-    branches: [ dockerSaul ]
+    branches:
+      - '**'   
 
 jobs:
   ci:

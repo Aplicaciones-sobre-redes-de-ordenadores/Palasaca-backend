@@ -52,7 +52,7 @@ const createAccount = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in createAccount:", error);
-        res.status(400).json({ 
+        res.status(500).json({ 
         success: false,
         error: error.message 
         });
@@ -60,7 +60,7 @@ const createAccount = async (req, res) => {
 };
 
 // GET /accounts/:accountId
-const getAccount = async (req, res) => {
+const getAccountById = async (req, res) => {
     try {
         const { accountId } = req.params;
         
@@ -131,7 +131,7 @@ const deleteAccount = async (req, res) => {
 module.exports = {
     getAccountsByUser,
     createAccount,
-    getAccount,
+    getAccountById,
     updateAccount,
     deleteAccount
 };
