@@ -21,7 +21,10 @@ afterAll(() => {
 
 describe('loginUserController', () => {
   test('devuelve success y user si las credenciales son correctas', async () => {
-    userService.getUserObjectId = jest.fn().mockResolvedValue('abc123');
+    userService.getUserObjectId = jest.fn().mockResolvedValue({
+      objectId: 'abc123',
+      esAdmin: undefined
+    });
 
     const req = { body: { email: 'test@test.com', password: '1234' } };
     const res = mockResponse();
