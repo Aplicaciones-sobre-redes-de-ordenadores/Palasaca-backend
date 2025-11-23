@@ -33,7 +33,7 @@ describe('loginUserController', () => {
 
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      user: { objectId: 'abc123', email: 'test@test.com' },
+      user: { objectId: 'abc123', email: 'test@test.com', esAdmin: undefined },
     });
   });
 
