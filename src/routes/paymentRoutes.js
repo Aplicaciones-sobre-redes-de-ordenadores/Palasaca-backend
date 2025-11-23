@@ -6,7 +6,8 @@ const {
   createPayment,
   updatePaymentStatus,
   deletePayment,
-    updatePaymentReminder
+    updatePaymentReminder,
+    getTotalPaymentsCount
 } = require('../controllers/paymentController');
 router.get('/account/:accountId', getPaymentsByAccount);
 const RateLimit = require('express-rate-limit');
@@ -26,6 +27,7 @@ router.put('/:paymentId/reminder', updatePaymentReminder);
 
 router.delete('/:paymentId', deletePayment);
 
+router.get('/count', getTotalPaymentsCount);
 // Función de mantenimiento para marcar pagos como 'Vencido'
 //router.get('/check-overdue', paymentController.checkOverduePayments);
 

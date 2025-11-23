@@ -26,6 +26,16 @@ const getAccountsByUser = async (req, res) => {
     }
 };
 
+const getTotalAccountsCount = async (req, res) => {
+    try {
+        const count = await accountService.getTotalAccountsCount();
+        res.json({ success: true, totalAccounts: count });
+    } catch (error) {
+        console.error("Error in getTotalAccountsCount:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // POST /accounts
 const createAccount = async (req, res) => {
     try {
@@ -133,5 +143,6 @@ module.exports = {
     createAccount,
     getAccountById,
     updateAccount,
-    deleteAccount
+    deleteAccount,
+    getTotalAccountsCount
 };

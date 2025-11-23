@@ -9,7 +9,7 @@ const getAllUsers = async () => {
   const query = new Parse.Query(User);
   const results =  await query.find({ useMasterKey: true });
 
-  return results.map(u => new UserModel(u.get("Nombre"),u.get("Correo")));
+  return results.map(u => new UserModel(u.get("Nombre"),u.get("Correo"), u.id));
 };
 
 // Agregar usuario a la BBDD:Usuarios
@@ -119,6 +119,38 @@ const updateUserEmail = async (objectId, newEmail) => {
   return new UserModel(user.get("Nombre"), user.get("Correo"));
 };
 
+const updateAllUser = async (objectId, updates = {}) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
+
+  const user = await query.get(objectId, { useMasterKey: true });
+  if (!user) throw new Error("User not found");
+  if (updates.name !== undefined) {
+    user.set("Nombre", updates.name);
+  }
+
+  if (updates.email !== undefined) {
+    user.set("Correo", updates.email);
+  }
+  
+  if (updates.role !== undefined) {
+    const role = updates.role.toLowerCase() == 'admin' ? 'admin' : 'user';
+    user.set("role", role); 
+  }
+
+  if (updates.newPassword) {
+    const hashedPassword = await bcrypt.hash(updates.newPassword, 10);
+    user.set("PassWord", hashedPassword);
+  }
+
+  await user.save(null, { useMasterKey: true });
+  return { 
+    name: user.get("Nombre"), 
+    email: user.get("Correo"),
+    role: user.get("role") || 'user'
+  };
+};
+
 // Eliminar usuario usando su objectId en BBDD:Usuarios
 const deleteUser = async (objectId) => {
   const User = Parse.Object.extend("Usuarios");
@@ -135,18 +167,21 @@ const deleteUser = async (objectId) => {
 
 //Obtener objectId si email y contraseña son correctos
 const getUserObjectId = async (email, password) => {
+  console.log("Email in getUserObjectId:", email);
   const ParseUser = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(ParseUser);
   query.equalTo("Correo", email);
 
   const result = await query.first({ useMasterKey: true });
+  console.log("Result in getUserObjectId:", result);
   if (!result) return null;
 
   const isMatch = await compareUsersPassword(result.get("PassWord"), password);
 
   if (!isMatch) return null;
-
-  return result.id;
+  const adminFlag = result.get("esAdmin");
+  const esAdmin = adminFlag === true ? true : false;
+  return {id: result.id, esAdmin: esAdmin};
 };
 
 
@@ -175,4 +210,4 @@ const getUserById = async (objectId) => {
   }
 };
 
-module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUserName, updateUserPassword, deleteUser, updateUserEmail, getUserById };
+module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateAllUser,updateUserName, updateUserPassword, deleteUser, updateUserEmail, getUserById };

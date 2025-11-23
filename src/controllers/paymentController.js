@@ -21,6 +21,17 @@ const getPaymentsByAccount = async (req, res) => {
   }
 };
 
+const getTotalPaymentsCount = async (req, res) => {
+  try {
+    const count = await paymentService.getTotalPaymentsCount();
+    res.json({ success: true, totalPayments: count });
+  } catch (error) {
+    console.error("Error in getTotalPaymentsCount:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
 // POST /payments
 const createPayment = async (req, res) => {
   try {
@@ -145,5 +156,6 @@ module.exports = {
   createPayment,
   updatePaymentStatus,
   deletePayment,
-  updatePaymentReminder
+  updatePaymentReminder,
+  getTotalPaymentsCount,
 };
