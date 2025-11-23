@@ -11,6 +11,23 @@ const getUsers = async (req, res) => {
   }
 };
 
+// PUT /users/updates/:id
+const updateAllUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const updatedUser = await userService.updateAllUser(id, updates);
+     res.status(200).json({
+      success: true,
+      user: updatedUser
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+
 // POST /users
 const createUser = async (req, res) => {
   try {
@@ -153,4 +170,4 @@ const getUserById = async (req, res) => {
 };
 
 
-module.exports = {getUserID, getUsers, createUser, getUserByEmail, updateUser, deleteUser, updateUserEmail, updateUserPassword, getUserById };
+module.exports = {getUserID, getUsers, createUser, updateAllUser, getUserByEmail, updateUser, deleteUser, updateUserEmail, updateUserPassword, getUserById };

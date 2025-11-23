@@ -32,6 +32,19 @@ const getAccountsByUser = async (userId) => {
     }
 };
 
+const getTotalAccountsCount = async () => {
+    try {
+        const query = new Parse.Query(Parse.Object.extend("Cuentas"));
+        const count = await query.count({ useMasterKey: true });
+        console.log("Total accounts count:", count);
+        return count;
+    } catch (error) {
+        console.error("Error al obtener el conteo total de cuentas:", error);
+        throw error;
+    }
+};
+
+
 // Crear nueva cuenta para un usuario
 const createAccount = async (userId, accountName, initialBalance = 0) => {
     try {
@@ -135,5 +148,6 @@ module.exports = {
     createAccount,
     getAccountById,
     updateAccount,
-    deleteAccount
+    deleteAccount,
+    getTotalAccountsCount
 };

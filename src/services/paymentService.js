@@ -20,6 +20,15 @@ const mapToModel = (payment) => {
   );
 };
 
+const getTotalPaymentsCount = async () => {
+  try {
+    const query = new Parse.Query(Payment);
+    return await query.count({ useMasterKey: true });
+  } catch (error) {
+    console.error("Error al obtener el conteo total de pagos:", error);
+    throw error;
+  }
+};
 
 const getPaymentsByAccount = async (accountId) => {
   try {
@@ -184,5 +193,6 @@ module.exports = {
   updatePaymentStatus,
   deletePayment,
   checkAndSetOverduePayments,
-  updateReminder
+  updateReminder,
+  getTotalPaymentsCount
 };

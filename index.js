@@ -1,5 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '.env.development') });
 const app = require("./src/app");
 
 console.log("Puerto:", process.env.PORT); 
@@ -10,7 +10,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en puerto ${PORT}`)
     

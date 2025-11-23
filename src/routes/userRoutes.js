@@ -10,7 +10,8 @@ const {
   getUserID,
   updateUserEmail,
   updateUserPassword,
-  getUserById
+  getUserById,
+  updateAllUser
 } = require('../controllers/userController');
 const RateLimit = require('express-rate-limit');
 
@@ -30,5 +31,5 @@ router.put('/password/:id', updateUserPassword);
 router.delete('/:id', deleteUser); 
 router.post("/getUserID",middlewares.authMiddleware("admin"),getUserID);
 router.get('/:id', getUserById);
-
+router.put('/updates/:id', updateAllUser);
 module.exports = router;
