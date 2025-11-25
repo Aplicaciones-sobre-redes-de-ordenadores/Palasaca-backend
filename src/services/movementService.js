@@ -90,9 +90,35 @@ const updateAccountBalance = async (accountId, amountChange) => {
     throw error;
   }
 };
+// Obtener todos los movimientos
+const getAllMovements = async () => {
+  try {
+    const Movement = Parse.Object.extend("Movimiento");
+    const query = new Parse.Query(Movement);
+
+    // Traer todos los movimientos, sin filtro de cuenta
+    const results = await query.find({ useMasterKey: true });
+
+    return results.map(mov => new MovementModel(
+      mov.id,
+      mov.get("id_cuenta")?.id || null,
+      mov.get("Tipo"),
+      mov.get("Fijo"),
+      mov.get("Categoria"),
+      mov.get("Comentarios"),
+      mov.get("Cantidad"),
+      mov.get("createdAt"),
+      mov.get("updatedAt")
+    ));
+  } catch (error) {
+    console.error("Error fetching all movements:", error);
+    throw error;
+  }
+};
 
 module.exports = {
   getMovementsByAccount,
   createMovement,
-  updateAccountBalance
+  updateAccountBalance,
+  getAllMovements 
 };
