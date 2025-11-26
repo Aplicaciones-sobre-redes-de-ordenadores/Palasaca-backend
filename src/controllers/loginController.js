@@ -1,5 +1,6 @@
 const Parse = require('parse/node');
 const userService = require("../services/userService");
+const { saveLog } = require('../services/logService');
 
 const loginUserController = async (req, res) => {
   try {
@@ -10,10 +11,16 @@ const loginUserController = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const { objectId, esAdmin } = userResult;
+    const { id: objectId, esAdmin } = userResult;
+
 
     console.log("objectId:", objectId);
     console.log("esAdmin:", esAdmin);
+
+    await saveLog(
+      `${req.method} ${req.originalUrl}`,
+      objectId
+    );
     
     return res.json({ 
       success: true
