@@ -11,6 +11,19 @@ services:
     depends_on:
       - mongo
 
+  backend-test:
+    build: .
+    container_name: palasaca-backend-test
+    env_file:
+      - .env.test.docker
+    environment:
+      - DOCKER_ENV=1
+    depends_on:
+      - mongo
+      - parse
+    # no exponemos puertos, solo lo usamos para correr tests
+    command: ["npm", "run", "test:integration"]
+
   mongo:
     image: mongo:6
     container_name: palasaca-mongo
@@ -27,10 +40,12 @@ services:
     image: parseplatform/parse-server
     container_name: palasaca-parse
     environment:
-      - PARSE_SERVER_APPLICATION_ID=xxxx
-      - PARSE_SERVER_MASTER_KEY=xxxx
+      - PARSE_SERVER_APPLICATION_ID=palasaca-local-app
+      - PARSE_SERVER_MASTER_KEY=palasaca-local-master
       - PARSE_SERVER_DATABASE_URI=mongodb://root:example@mongo:27017/palasaca_prod?authSource=admin
-      - PARSE_SERVER_URL=http://0.0.0.0:1337/parse
+      - PARSE_SERVER_URL=http://parse:1337/parse
+      # Muy importante por el tema "unauthorized" con master key:
+      - PARSE_SERVER_MASTER_KEY_IPS=0.0.0.0/0,::/0
     ports:
       - "1337:1337"
     depends_on:

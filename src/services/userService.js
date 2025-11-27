@@ -15,13 +15,6 @@ const getAllUsers = async () => {
 // Agregar usuario a la BBDD:Usuarios
 const addUser = async ({ name, email, password }) => {
   // Validaciones básicas
-  if (!name || !email || !password) {
-    return res.status(400).json({ 
-      success: false,
-      error: 'Todos los campos son obligatorios' 
-    });
-  }
-
   // VERIFICAR SI EL USUARIO YA EXISTE
   const existingUser = await getUserByEmailFromDB(email);
   if (existingUser) {
