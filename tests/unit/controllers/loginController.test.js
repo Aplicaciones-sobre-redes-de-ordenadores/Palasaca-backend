@@ -19,6 +19,10 @@ afterAll(() => {
   console.error.mockRestore();
 });
 
+jest.mock('../../../src/services/logService', () => ({
+  saveLog: jest.fn().mockResolvedValue(true)
+}));
+
 describe('loginUserController', () => {
   test('devuelve success y user si las credenciales son correctas', async () => {
     userService.getUserObjectId = jest.fn().mockResolvedValue({

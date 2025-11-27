@@ -11,7 +11,8 @@ const loginUserController = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const { id: objectId, esAdmin } = userResult;
+    const objectId = userResult.objectId || userResult.id;
+     const { esAdmin } = userResult;
 
 
     console.log("objectId:", objectId);
@@ -24,7 +25,7 @@ const loginUserController = async (req, res) => {
     
     return res.json({ 
       success: true
-      , user: { objectId, email, esAdmin }
+      , user: { objectId , email, esAdmin }
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
