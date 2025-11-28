@@ -25,10 +25,10 @@ describe('Integración: /users', () => {
     const user = new Usuarios();
 
     // 1) Definimos una contraseña de pruebas (en claro)
-    const plainPassword = 'TestUser123!';
+    passWord = 'TestUser123!';
 
     // 2) La ciframos igual que hace tu servicio (bcrypt.hash) 
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    const hashedPassword = await bcrypt.hash(passWord, 10);
     const email = `int_user_${Date.now()}@palasaca.test`;
 
     user.set('Nombre', 'Usuario Integración Test');
@@ -39,7 +39,6 @@ describe('Integración: /users', () => {
     baseUserName = savedUser.get('Nombre')
     baseUserId = savedUser.id;
     baseUserEmail = savedUser.get('Correo');
-    passWord = savedUser.get('PassWord');
 
     console.log('✅ Usuario de test creado con id =', baseUserId);
   });
