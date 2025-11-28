@@ -11,9 +11,16 @@ describe('Integración: /users', () => {
   let baseUserId;            // usuario principal con el que pruebas
   let baseUserEmail;            // Email del usuario principal (para tests de login, getByEmail, etc.)
   const createdUserIds = [];    // cuenta principal para probar GET/PUT/DELETE
+  let consoleErrorSpy;
+  let passWord;
 
   // Crear usuario de pruebas en Parse antes de todos los tests
   beforeAll(async () => {
+    // muteamos TODOS los console.error de esta suite
+    consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
     const Usuarios = Parse.Object.extend('Usuarios');
     const user = new Usuarios();
 
@@ -29,14 +36,21 @@ describe('Integración: /users', () => {
     user.set('PassWord', hashedPassword);
 
     const savedUser = await user.save(null, { useMasterKey: true });
+    baseUserName = savedUser.get('Nombre')
     baseUserId = savedUser.id;
     baseUserEmail = savedUser.get('Correo');
+    passWord = savedUser.get('PassWord');
 
     console.log('✅ Usuario de test creado con id =', baseUserId);
   });
 
   // Limpiar Usuarios y usuario al final
   afterAll(async () => {
+    // restauramos el comportamiento normal
+    if (consoleErrorSpy) {
+      consoleErrorSpy.mockRestore();
+    }
+
     try {
       if (createdUserIds.length > 0) {
         const Usuarios = Parse.Object.extend('Usuarios');
@@ -87,12 +101,12 @@ describe('Integración: /users', () => {
         const Usuarios = Parse.Object.extend('Usuarios');
         const query = new Parse.Query(Usuarios);
         query.equalTo('Correo', email);
-        const savedUser = await query.first({ useMasterKey: true });
+        const savedUserInsert = await query.first({ useMasterKey: true });
 
-        expect(savedUser).not.toBeNull();
+        expect(savedUserInsert).not.toBeNull();
 
         // Guardamos el id para poder borrarlo en afterAll
-        createdUserIds.push(savedUser.id);
+        createdUserIds.push(savedUserInsert.id);
     });
 
     test('devuelve 400 si faltan campos obligatorios', async () => {
@@ -127,4 +141,126 @@ describe('Integración: /users', () => {
         );
     });
   });
+
+  describe('GET /users/email/:email', () => {
+    test('GET /users/email/:email devuelve la cuenta correctamente', async () => {
+        const res = await request(app).get(`/users/email/${baseUserEmail}`);
+
+        expect(res.statusCode).toBe(200);
+
+        const user = res.body;
+        expect(user.name).toBe(baseUserName);
+        expect(user.email).toBe(baseUserEmail); 
+    });
+
+    test('GET /users/email/:email no encuentra el usuario', async () => {
+        const res = await request(app).get(`/users/email/usuarioPrueba`);
+
+        expect(res.statusCode).toBe(404);
+        expect(res.body).toHaveProperty(
+            'message',
+            'User not found'
+        );
+    });
+  });
+
+  describe('GET /users', () => {
+    test('GET /users devuelve una lista de usuarios correcta', async () => {
+        const res = await request(app).get(`/users`);
+
+        expect(res.statusCode).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body.length).toBeGreaterThanOrEqual(1);
+
+        // 4) Que alguno tenga el email del usuario base
+        const emails = res.body.map(u => u.email);
+        expect(emails).toContain(baseUserEmail);
+    })
+  });
+
+  describe('PUT /users/:id', () => {
+    test('PUT /users/:id actualiza un usuario correctamente', async () => {
+        const newName = 'Usuario Actualizado INT';
+        const newPasswordUpd = 'ContraseñaActualizada';
+
+        const res = await request(app)
+        .put(`/users/${baseUserId}`)
+        .send({
+            name: newName,
+            checkPassword: passWord,
+            newPassword: newPasswordUpd,
+        });
+
+        if (res.statusCode !== 200) {
+            console.error('❌ updateRes status/body:', res.statusCode, res.body);
+        }
+
+        expect(res.statusCode).toBe(200);
+        const user = res.body;
+        expect(user.name).toBe(newName);
+        expect(user.email).toBe(baseUserEmail);
+
+        // Extra: comprobar que en GET también aparece actualizado
+        const getRes = await request(app).get(`/users/email/${baseUserEmail}`);
+        expect(getRes.statusCode).toBe(200);
+        expect(getRes.body.name).toBe(newName);
+        expect(getRes.body.email).toBe(baseUserEmail);
+    })
+
+    test('PUT /users/:id no ha mandado contraseña para cambiar', async () => {
+        const res = await request(app)
+        .put(`/users/${baseUserId}`)
+        .send({
+            checkPassword: passWord,
+        });
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toHaveProperty('success',false);
+        expect(res.body).toHaveProperty(
+            'message',
+            'A name update or both checkPassword and newPassword are required.'
+        );
+    });
+
+    test('PUT /users/:id no encuentra usuario', async () => {
+        const newName = 'Usuario Actualizado INT';
+        const newPasswordUpd = 'ContraseñaActualizada';
+
+        const res = await request(app)
+        .put(`/users/NoExiste`)
+        .send({
+            name: newName,
+            checkPassword: passWord,
+            newPassword: newPasswordUpd,
+        });
+
+        expect(res.statusCode).toBe(404);
+        expect(res.body).toHaveProperty('success',false);
+        expect(res.body).toHaveProperty(
+            'message',
+            'User not found with the given ID'
+        );
+    });
+
+    test('PUT /users/:id con contraseña incorrecta', async () => {
+        const newName = 'Usuario Actualizado INT';
+        const newPasswordUpd = 'ContraseñaActualizada';
+
+        const res = await request(app)
+        .put(`/users/${baseUserId}`)
+        .send({
+            name: newName,
+            checkPassword: 'IncorrectPassword',
+            newPassword: newPasswordUpd,
+        });
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body).toHaveProperty('success',false);
+        expect(res.body).toHaveProperty(
+            'message',
+            'Invalid password'
+        );
+    });
+  });
+
 });

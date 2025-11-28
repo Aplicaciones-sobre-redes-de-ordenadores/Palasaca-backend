@@ -5,7 +5,7 @@ const userService = require("../services/userService");
 const getUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
-    res.json(users.map(u => u.toJSON()));
+    res.status(200).json(users.map(u => u.toJSON()));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -55,7 +55,7 @@ const getUserByEmail = async (req, res) => {
     const { email } = req.params;
     const user = await userService.findUserByEmail(email);
     if (user) {
-      res.json(user.toJSON());
+      res.status(200).json(user.toJSON());
     } else {
       res.status(404).json({ message: "User not found" });
     }
@@ -66,26 +66,54 @@ const getUserByEmail = async (req, res) => {
 
 // PUT /users/:id
 const updateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, checkPassword, newPassword } = req.body;
-    let updatedUser = "";
+    try {
+        const { id } = req.params;
+        const { name, checkPassword, newPassword } = req.body;
+        let updatedUser = null;
 
-    if (name) {
-      updatedUser = await userService.updateUserName(id, name);
-    }
-    if (checkPassword && newPassword){
-      updatedUser = await userService.updateUserPassword(id, checkPassword , newPassword);
-    } else {
-      res.status(404).json({ message: "checkPassword and newPassword needed to change the password" });
-    }
+        if (checkPassword && newPassword) {
+          // primero validar + cambiar contraseña
+          updatedUser = await userService.updateUserPassword(id, checkPassword, newPassword);
+        }
 
-    res.json(updatedUser.toJSON());
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+        if (name) {
+          // luego actualizar nombre (puedes usar el mismo usuario o volver a cargar)
+          updatedUser = await userService.updateUserName(id, name);
+        }
+
+        if (!updatedUser) {
+          return res.status(400).json({
+            success: false,
+            message: 'A name update or both checkPassword and newPassword are required.',
+          });
+        }
+
+        return res.status(200).json(updatedUser.toJSON());
+        
+    } catch (error) {
+        // 🔑 Manejar error de "Usuario no encontrado" (404)
+        if (error.message && error.message.includes("Object not found")) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "User not found with the given ID" 
+            });
+        }
+
+        else if (error.message && error.message.includes("Unauthorized")) {
+            return res.status(401).json({ 
+                success: false, 
+                message: "Invalid password" 
+            });
+        }
+        
+        // El resto de errores deben ser 500 (o 400 si son de negocio, ej. contraseña incorrecta)
+        console.error('Error at updateUser:', error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message || 'Internal error during update'
+        });
+    }
 };
-
 
 // DELETE /users/:id
 const deleteUser = async (req, res) => {
@@ -94,7 +122,7 @@ const deleteUser = async (req, res) => {
     await userService.deleteUser(id);
     res.json({ message: "User deleted" });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(404).json({ message: error.message });
   }
 };
 
@@ -107,7 +135,7 @@ const getUserID = async (req, res) => {
     }
     res.json({ objectId });
   } catch (error) { 
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 

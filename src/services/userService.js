@@ -91,12 +91,13 @@ const updateUserPassword = async (objectId, checkPassword, newPassword) => {
   const user = await query.get(objectId, { useMasterKey: true });
   if (!user) throw new Error("User not found");
 
-  if (await compareUsersPassword(user.get("PassWord"), checkPassword)){
-    console.log("He entrado");
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.set("PassWord", hashedPassword);
-  };
+  if (!(await compareUsersPassword(user.get("PassWord"), checkPassword)))
+    throw new Error("Unauthorized");
 
+  // Si llegamos aquí, la contraseña es CORRECTA
+  console.log("He entrado");
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.set("PassWord", hashedPassword);
   await user.save(null,{ useMasterKey: true });
 
   return new UserModel(user.get("Nombre"), user.get("Correo"));

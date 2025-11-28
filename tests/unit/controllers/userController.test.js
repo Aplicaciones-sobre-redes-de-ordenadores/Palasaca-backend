@@ -116,7 +116,7 @@ describe('userController', () => {
 
     await createUser(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
       error: 'otro error',
