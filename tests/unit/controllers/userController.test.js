@@ -177,7 +177,9 @@ describe('userController', () => {
     await deleteUser(req, res);
 
     expect(userService.deleteUser).toHaveBeenCalledWith('userId');
-    expect(res.json).toHaveBeenCalledWith({ message: 'User deleted' });
+    expect(res.json).toHaveBeenCalledWith({
+       success: true,
+       message: 'User deleted' });
   });
 
   test('getUserID devuelve objectId si credenciales son correctas', async () => {

@@ -120,9 +120,25 @@ const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     await userService.deleteUser(id);
-    res.json({ message: "User deleted" });
+
+    return res.json({
+      success: true,
+      message: "User deleted",
+    });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    // Usuario no encontrado (Parse lanza "Object not found" cuando el id no existe)
+    if (error.message && error.message.includes("Object not found")) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found with the given ID",
+      });
+    }
+
+    console.error("Error at deleteUser:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error deleting user",
+    });
   }
 };
 

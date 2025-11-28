@@ -2,6 +2,14 @@
 
 const request = require('supertest');
 const Parse = require('../../src/config/parseConfig'); // mismo Parse que usa el backend
+
+// 👮‍♂️ Mockeamos el middleware de auth para que siempre deje pasar como admin
+jest.mock('../../src/middlewares/authMiddleware', () => ({
+  authMiddleware: () => (req, res, next) => {
+    req.user = { id: 'test-admin', role: 'admin' };
+    next();
+  },
+}));
 const app = require('../../src/app');                  // Express app sin listen()
 const bcrypt = require('bcrypt');
 
@@ -199,6 +207,8 @@ describe('Integración: /users', () => {
         expect(user.name).toBe(newName);
         expect(user.email).toBe(baseUserEmail);
 
+        passWord = newPasswordUpd;
+
         // Extra: comprobar que en GET también aparece actualizado
         const getRes = await request(app).get(`/users/email/${baseUserEmail}`);
         expect(getRes.statusCode).toBe(200);
@@ -262,4 +272,91 @@ describe('Integración: /users', () => {
     });
   });
 
+  describe('DELETE /users/:id', () => {
+    test('DELETE /users/:id elimina un usuario existente', async () => {
+        // 1) Creamos un usuario SOLO para este test directamente en Parse
+        const Usuarios = Parse.Object.extend('Usuarios');
+        const user = new Usuarios();
+
+        const localPlainPassword = 'DeleteUser123!';
+        const hashedPassword = await bcrypt.hash(localPlainPassword, 10);
+        const email = `delete_user_${Date.now()}@palasaca.test`;
+
+        user.set('Nombre', 'Usuario a borrar INT');
+        user.set('Correo', email);
+        user.set('PassWord', hashedPassword);
+
+        const saved = await user.save(null, { useMasterKey: true });
+        const userIdToDelete = saved.id;
+
+        // 2) Llamamos a la API para borrar
+        const res = await request(app).delete(`/users/${userIdToDelete}`);
+
+        if (res.statusCode !== 200) {
+            console.error('❌ deleteRes status/body:', res.statusCode, res.body);
+        }
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty('message', 'User deleted');
+
+        // 3) Comprobamos contra Parse que YA NO existe
+        const query = new Parse.Query(Usuarios);
+        await expect(
+            query.get(userIdToDelete, { useMasterKey: true })
+        ).rejects.toThrow(); // debería lanzar "Object not found"
+    });
+
+    test('DELETE /users/:id devuelve 404 si el usuario no existe', async () => {
+        const res = await request(app).delete('/users/NoExiste');
+
+        expect(res.statusCode).toBe(404);
+        expect(res.body).toHaveProperty('success', false);
+        expect(res.body).toHaveProperty(
+            'message',
+            'User not found with the given ID'
+        );
+    });
+  });
+
+  describe('POST /users/getUserID', () => {
+    test('devuelve el objectId con email y password correctos', async () => {
+      const res = await request(app)
+        .post('/users/getUserID')
+        .send({
+          email: baseUserEmail,
+          password: passWord,   // la contraseña en claro que usamos en beforeAll
+        });
+
+      if (res.statusCode !== 200) {
+        console.error('❌ getUserID OK status/body:', res.statusCode, res.body);
+      }
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('objectId', baseUserId);
+    });
+
+    test('devuelve 404 si el email no existe', async () => {
+      const res = await request(app)
+        .post('/users/getUserID')
+        .send({
+          email: `no_existe_${Date.now()}@palasaca.test`,
+          password: 'Whatever123!',
+        });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toHaveProperty('message', 'Invalid email or password');
+    });
+
+    test('devuelve 404 si la contraseña es incorrecta', async () => {
+      const res = await request(app)
+        .post('/users/getUserID')
+        .send({
+          email: baseUserEmail,
+          password: 'WrongPassword123!',
+      });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toHaveProperty('message', 'Invalid email or password');
+    });
+  });
 });
