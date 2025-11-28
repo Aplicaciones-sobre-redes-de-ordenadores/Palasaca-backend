@@ -22,8 +22,8 @@ jobs:
         ports:
           - 1337:1337
         env:
-          PARSE_SERVER_APPLICATION_ID: testAppId
-          PARSE_SERVER_MASTER_KEY: testMasterKey
+          PARSE_SERVER_APPLICATION_ID: palasaca-local-app
+          PARSE_SERVER_MASTER_KEY: palasaca-local-master
           PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
           PARSE_SERVER_URL: http://localhost:1337/parse
 
