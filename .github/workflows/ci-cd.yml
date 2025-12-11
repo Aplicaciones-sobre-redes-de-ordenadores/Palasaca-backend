@@ -14,8 +14,8 @@ jobs:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
       PARSE_MASTER_KEY: palasaca-local-master
-      # 👇 importante: usar el hostname del servicio, no localhost
-      PARSE_SERVER_URL: http://parse:1337/parse
+      # 👇 en CI usamos localhost porque los servicios se exponen en la VM
+      PARSE_SERVER_URL: http://localhost:1337/parse
 
     services:
       mongo:
@@ -31,7 +31,7 @@ jobs:
           PARSE_SERVER_APPLICATION_ID: palasaca-local-app
           PARSE_SERVER_MASTER_KEY: palasaca-local-master
           PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
-          PARSE_SERVER_URL: http://parse:1337/parse
+          PARSE_SERVER_URL: http://localhost:1337/parse
           # 👇 habilitamos master key desde cualquier IP
           PARSE_SERVER_MASTER_KEY_IPS: 0.0.0.0/0,::/0
 
