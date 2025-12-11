@@ -144,7 +144,7 @@ const getMonthlyTrend = async (accountId) => {
     const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     const trendMap = new Map();
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 3; i++) {
       const d = new Date(sixMonthsAgo);
       d.setMonth(d.getMonth() + i);
       const key = `${monthNames[d.getMonth()]}`;
