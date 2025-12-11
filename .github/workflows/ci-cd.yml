@@ -10,7 +10,6 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    # Variables globales para los pasos del job (tus tests)
     env:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
@@ -22,8 +21,7 @@ jobs:
         image: mongo:6
         ports:
           - 27017:27017
-        # 👇 CORRECCIÓN: En GitHub Actions se usa 'env', no 'environment'
-        env:
+        env: # Usamos 'env' para GitHub Actions
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: example
 
@@ -34,12 +32,14 @@ jobs:
         env:
           PARSE_SERVER_APPLICATION_ID: palasaca-local-app
           PARSE_SERVER_MASTER_KEY: palasaca-local-master
-          # Conexión interna entre contenedores (parse -> mongo)
+          # Conexión Parse a Mongo (con autenticación)
           PARSE_SERVER_DATABASE_URI: mongodb://root:example@mongo:27017/palasaca_test?authSource=admin
           PARSE_SERVER_URL: http://localhost:1337/parse
           PARSE_SERVER_MASTER_KEY_IPS: 0.0.0.0/0,::/0
+          # 👇 SOLUCIÓN FINAL DE TIMING: Retraso de 15 segundos antes de conectarse a Mongo
+          PARSE_SERVER_STARTUP_DELAY: 15000
         
-        # Opciones en una sola línea para evitar el error 125
+        # Health Check y opciones de Docker (Soluciona Exit Code 125)
         options: '--health-cmd "curl http://localhost:1337/parse/health" --health-interval 5s --health-timeout 5s --health-retries 10'
 
     steps:
