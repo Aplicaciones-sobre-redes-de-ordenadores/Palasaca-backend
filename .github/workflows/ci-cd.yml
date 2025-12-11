@@ -10,11 +10,11 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    # Variables que usan tus tests (usan el hostname 'parse')
     env:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
       PARSE_MASTER_KEY: palasaca-local-master
-      # URL de los tests
       PARSE_SERVER_URL: http://parse:1337/parse 
 
     services:
@@ -22,9 +22,8 @@ jobs:
         image: mongo:6
         ports:
           - 27017:27017
-        # 👇 ¡QUITAMOS TODA LA AUTENTICACIÓN! La base de datos es para testing.
-        # Ya NO se usa 'env:' aquí
-        
+        # NOTA: Sin 'env' aquí para que Mongo inicie sin autenticación.
+
       parse:
         image: parseplatform/parse-server
         ports:
@@ -32,14 +31,12 @@ jobs:
         env:
           PARSE_SERVER_APPLICATION_ID: palasaca-local-app
           PARSE_SERVER_MASTER_KEY: palasaca-local-master
-          # 👇 CORRECCIÓN: Usamos una URI simple sin usuario ni contraseña
+          # URI simplificada para Mongo sin autenticación
           PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
           PARSE_SERVER_URL: http://localhost:1337/parse
           PARSE_SERVER_MASTER_KEY_IPS: 0.0.0.0/0,::/0
-          # Quitamos el delay, porque sin autenticación, debería conectar al instante
-          # PARSE_SERVER_STARTUP_DELAY: 15000 
         
-        # Health Check y opciones de Docker (necesario para esperar el inicio)
+        # Health Check en formato correcto (corrige Exit Code 125)
         options: '--health-cmd "curl http://localhost:1337/parse/health" --health-interval 5s --health-timeout 5s --health-retries 10'
 
     steps:
@@ -55,6 +52,7 @@ jobs:
         run: npm install --include=dev
 
       - name: Run tests
+        # Inyectamos las variables con la URL correcta
         env:
           APP_ID_DEV: ${{ env.PARSE_APP_ID }}
           MASTER_KEY_DEV: ${{ env.PARSE_MASTER_KEY }}
