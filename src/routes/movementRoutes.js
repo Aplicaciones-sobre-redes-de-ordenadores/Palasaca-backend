@@ -5,6 +5,7 @@ const movementController = require('../controllers/movementController');
 router.get('/account/:accountId', movementController.getMovementsByAccount);
 router.post('/', movementController.createMovement);
 router.get("/all", movementController.getAllMovements);
+router.get('/trend/:accountId', movementController.getMonthlyTrend);
 const RateLimit = require('express-rate-limit');
 
 const limiter = RateLimit({

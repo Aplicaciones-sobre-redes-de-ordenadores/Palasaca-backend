@@ -106,8 +106,36 @@ const getAllMovements = async (req, res) => {
   }
 };
 
+const getMonthlyTrend = async (req, res) => {
+  try {
+    const { accountId } = req.params;
+
+    if (!accountId) {
+      return res.status(400).json({
+        success: false,
+        error: "Account ID is required"
+      });
+    }
+
+    const trendData = await movementService.getMonthlyTrend(accountId);
+
+    res.json({
+      success: true,
+      data: trendData
+    });
+
+  } catch (error) {
+    console.error("Error in getMonthlyTrend:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getMovementsByAccount,
   createMovement,
-  getAllMovements
+  getAllMovements,
+  getMonthlyTrend
 };
