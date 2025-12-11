@@ -44,7 +44,7 @@ describe('Integración: /users', () => {
     user.set('PassWord', hashedPassword);
 
     const savedUser = await user.save(null, { useMasterKey: true });
-    baseUserName = savedUser.get('Nombre')
+    baseUserName = savedUser.get('Nombre');
     baseUserId = savedUser.id;
     baseUserEmail = savedUser.get('Correo');
 
