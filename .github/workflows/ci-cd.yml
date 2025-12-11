@@ -15,7 +15,7 @@ jobs:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
       PARSE_MASTER_KEY: palasaca-local-master
-      PARSE_SERVER_URL: http://localhost:1337/parse
+      PARSE_SERVER_URL: http://parse:1337/parse
 
     services:
       mongo:
