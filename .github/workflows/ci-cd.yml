@@ -10,12 +10,12 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    # 👇 definimos las credenciales Parse UNA sola vez
+    # 👇 Definimos las credenciales y la URL de Parse Server, que ahora usa el hostname del servicio 'parse'
     env:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
       PARSE_MASTER_KEY: palasaca-local-master
-      PARSE_SERVER_URL: http://parse:1337/parse
+      PARSE_SERVER_URL: http://parse:1337/parse # ⬅️ CORRECCIÓN CLAVE: Usamos 'parse' en lugar de 'localhost'
 
     services:
       mongo:
@@ -30,8 +30,17 @@ jobs:
         env:
           PARSE_SERVER_APPLICATION_ID: palasaca-local-app
           PARSE_SERVER_MASTER_KEY: palasaca-local-master
+          # La conexión de Parse a Mongo usa el nombre del servicio 'mongo'
           PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
+          # Esto es la URL que Parse Server se auto-publica
           PARSE_SERVER_URL: http://localhost:1337/parse
+        
+        # 👇 HEALTH CHECK: Asegura que Parse Server esté disponible antes de ejecutar los pasos
+        options: >
+          --health-cmd "curl http://localhost:1337/parse/health"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Checkout code
@@ -46,8 +55,8 @@ jobs:
         run: npm install --include=dev
 
       - name: Run tests
+        # 👇 Inyectamos las variables definidas en la sección 'env' del job.
         env:
-          # 👇 inyectamos estos envs al proceso de Node también
           APP_ID_DEV: ${{ env.PARSE_APP_ID }}
           MASTER_KEY_DEV: ${{ env.PARSE_MASTER_KEY }}
           PARSE_SERVER_URL: ${{ env.PARSE_SERVER_URL }}
