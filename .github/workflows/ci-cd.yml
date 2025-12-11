@@ -14,6 +14,7 @@ jobs:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
       PARSE_MASTER_KEY: palasaca-local-master
+      # URL de los tests
       PARSE_SERVER_URL: http://parse:1337/parse 
 
     services:
@@ -21,10 +22,9 @@ jobs:
         image: mongo:6
         ports:
           - 27017:27017
-        env: # Usamos 'env' para GitHub Actions
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: example
-
+        # 👇 ¡QUITAMOS TODA LA AUTENTICACIÓN! La base de datos es para testing.
+        # Ya NO se usa 'env:' aquí
+        
       parse:
         image: parseplatform/parse-server
         ports:
@@ -32,14 +32,14 @@ jobs:
         env:
           PARSE_SERVER_APPLICATION_ID: palasaca-local-app
           PARSE_SERVER_MASTER_KEY: palasaca-local-master
-          # Conexión Parse a Mongo (con autenticación)
-          PARSE_SERVER_DATABASE_URI: mongodb://root:example@mongo:27017/palasaca_test?authSource=admin
+          # 👇 CORRECCIÓN: Usamos una URI simple sin usuario ni contraseña
+          PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
           PARSE_SERVER_URL: http://localhost:1337/parse
           PARSE_SERVER_MASTER_KEY_IPS: 0.0.0.0/0,::/0
-          # 👇 SOLUCIÓN FINAL DE TIMING: Retraso de 15 segundos antes de conectarse a Mongo
-          PARSE_SERVER_STARTUP_DELAY: 15000
+          # Quitamos el delay, porque sin autenticación, debería conectar al instante
+          # PARSE_SERVER_STARTUP_DELAY: 15000 
         
-        # Health Check y opciones de Docker (Soluciona Exit Code 125)
+        # Health Check y opciones de Docker (necesario para esperar el inicio)
         options: '--health-cmd "curl http://localhost:1337/parse/health" --health-interval 5s --health-timeout 5s --health-retries 10'
 
     steps:
