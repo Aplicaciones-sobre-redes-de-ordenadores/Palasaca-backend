@@ -1,3 +1,5 @@
+// tests/unit/controllers/userController.test.js
+
 const {
   getUsers,
   createUser,
@@ -116,6 +118,7 @@ describe('userController', () => {
 
     await createUser(req, res);
 
+    // ⚠️ Tu controller devuelve 400 para errores genéricos
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
@@ -162,8 +165,7 @@ describe('userController', () => {
     await updateUser(req, res);
 
     expect(userService.updateUserName).toHaveBeenCalledWith('userId', 'NuevoNombre');
-    expect(userService.updateUserPassword)
-      .toHaveBeenCalledWith('userId', 'old', 'new');
+    expect(userService.updateUserPassword).toHaveBeenCalledWith('userId', 'old', 'new');
 
     expect(res.json).toHaveBeenCalledWith({ name: 'NuevoNombre' });
   });
@@ -188,8 +190,7 @@ describe('userController', () => {
 
     await getUserID(req, res);
 
-    expect(userService.getUserObjectId)
-      .toHaveBeenCalledWith('u@test.com', '1234');
+    expect(userService.getUserObjectId).toHaveBeenCalledWith('u@test.com', '1234');
     expect(res.json).toHaveBeenCalledWith({ objectId: 'abc123' });
   });
 
