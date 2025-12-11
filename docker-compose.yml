@@ -5,7 +5,7 @@ services:
     build: .
     container_name: palasaca-backend
     env_file:
-      - .env.dev
+      - .env.development
     ports:
       - "3000:3000"
     depends_on:

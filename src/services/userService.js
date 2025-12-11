@@ -2,23 +2,27 @@ const Parse = require("../config/parseConfig");
 const bcrypt = require("bcrypt");
 const UserModel = require("../models/userModel.js");
 
-
+// ─────────────────────────────────────────────
 // Obtener todos los usuarios de BBDD:Usuarios
+// ─────────────────────────────────────────────
 const getAllUsers = async () => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
-  const results =  await query.find({ useMasterKey: true });
+  const results = await query.find({ useMasterKey: true });
 
-  return results.map(u => new UserModel(u.get("Nombre"),u.get("Correo")));
+  // mantenemos el id extra que tenía main
+  return results.map(u => new UserModel(u.get("Nombre"), u.get("Correo"), u.id));
 };
 
+// ─────────────────────────────────────────────
 // Agregar usuario a la BBDD:Usuarios
+// (validaciones de campos obligatorios se hacen en el controller)
+// ─────────────────────────────────────────────
 const addUser = async ({ name, email, password }) => {
-  // Validaciones básicas
   // VERIFICAR SI EL USUARIO YA EXISTE
   const existingUser = await getUserByEmailFromDB(email);
   if (existingUser) {
-    throw new Error('User already exists');
+    throw new Error("User already exists");
   }
 
   const ParseUser = Parse.Object.extend("Usuarios");
@@ -30,27 +34,30 @@ const addUser = async ({ name, email, password }) => {
   user.set("PassWord", hashedPassword);
 
   const savedUser = await user.save(null, { useMasterKey: true });
-  return new UserModel(savedUser.get("Nombre"),savedUser.get("Correo"));
-
+  return new UserModel(savedUser.get("Nombre"), savedUser.get("Correo"));
 };
 
+// ─────────────────────────────────────────────
 // Función auxiliar para verificar usuario existente
+// ─────────────────────────────────────────────
 const getUserByEmailFromDB = async (email) => {
   try {
     const normalizedEmail = email.trim();
     const User = Parse.Object.extend("Usuarios");
     const query = new Parse.Query(User);
-    query.equalTo("Correo", normalizedEmail); 
-    
+    query.equalTo("Correo", normalizedEmail);
+
     const user = await query.first({ useMasterKey: true });
     return user;
   } catch (error) {
-    console.error('Error checking existing user:', error);
+    console.error("Error checking existing user:", error);
     return null;
   }
 };
 
+// ─────────────────────────────────────────────
 // Buscar usuario por email en la BBDD:Usuarios
+// ─────────────────────────────────────────────
 const findUserByEmail = async (email) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -60,7 +67,7 @@ const findUserByEmail = async (email) => {
   try {
     const result = await query.first({ useMasterKey: true });
     if (result) {
-      return new UserModel(result.get("Nombre"),result.get("Correo"));
+      return new UserModel(result.get("Nombre"), result.get("Correo"));
     } else {
       return null;
     }
@@ -70,7 +77,9 @@ const findUserByEmail = async (email) => {
   }
 };
 
-// Actualizar nombre de usuario filtrando por objectId de la BBDD:Usuarios
+// ─────────────────────────────────────────────
+// Actualizar NOMBRE por objectId
+// ─────────────────────────────────────────────
 const updateUserName = async (objectId, newName) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -79,11 +88,15 @@ const updateUserName = async (objectId, newName) => {
   if (!user) throw new Error("User not found");
 
   user.set("Nombre", newName);
-  await user.save(null,{ useMasterKey: true });
+  await user.save(null, { useMasterKey: true });
 
   return new UserModel(user.get("Nombre"), user.get("Correo"));
 };
 
+// ─────────────────────────────────────────────
+// Actualizar CONTRASEÑA por objectId
+//  -> aquí usamos la lógica de TU RAMA (lanza "Unauthorized")
+// ─────────────────────────────────────────────
 const updateUserPassword = async (objectId, checkPassword, newPassword) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -91,19 +104,72 @@ const updateUserPassword = async (objectId, checkPassword, newPassword) => {
   const user = await query.get(objectId, { useMasterKey: true });
   if (!user) throw new Error("User not found");
 
-  if (!(await compareUsersPassword(user.get("PassWord"), checkPassword)))
+  // si la contraseña no coincide, lanzamos error para que el controller responda 401
+  if (!(await compareUsersPassword(user.get("PassWord"), checkPassword))) {
     throw new Error("Unauthorized");
+  }
 
   // Si llegamos aquí, la contraseña es CORRECTA
   console.log("He entrado");
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   user.set("PassWord", hashedPassword);
-  await user.save(null,{ useMasterKey: true });
+  await user.save(null, { useMasterKey: true });
 
   return new UserModel(user.get("Nombre"), user.get("Correo"));
 };
 
-// Eliminar usuario usando su objectId en BBDD:Usuarios
+// ─────────────────────────────────────────────
+// Actualizar EMAIL por objectId (de main)
+// ─────────────────────────────────────────────
+const updateUserEmail = async (objectId, newEmail) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
+  const user = await query.get(objectId, { useMasterKey: true });
+  if (!user) throw new Error("User not found");
+  user.set("Correo", newEmail);
+  await user.save(null, { useMasterKey: true });
+  return new UserModel(user.get("Nombre"), user.get("Correo"));
+};
+
+// ─────────────────────────────────────────────
+// Actualizar varios campos a la vez (de main)
+// ─────────────────────────────────────────────
+const updateAllUser = async (objectId, updates = {}) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
+
+  const user = await query.get(objectId, { useMasterKey: true });
+  if (!user) throw new Error("User not found");
+
+  if (updates.name !== undefined) {
+    user.set("Nombre", updates.name);
+  }
+
+  if (updates.email !== undefined) {
+    user.set("Correo", updates.email);
+  }
+
+  if (updates.role !== undefined) {
+    const role = updates.role.toLowerCase() == "admin" ? "admin" : "user";
+    user.set("role", role);
+  }
+
+  if (updates.newPassword) {
+    const hashedPassword = await bcrypt.hash(updates.newPassword, 10);
+    user.set("PassWord", hashedPassword);
+  }
+
+  await user.save(null, { useMasterKey: true });
+  return {
+    name: user.get("Nombre"),
+    email: user.get("Correo"),
+    role: user.get("role") || "user",
+  };
+};
+
+// ─────────────────────────────────────────────
+// Eliminar usuario usando su objectId
+// ─────────────────────────────────────────────
 const deleteUser = async (objectId) => {
   const User = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(User);
@@ -117,30 +183,65 @@ const deleteUser = async (objectId) => {
   }
 };
 
-//Obtener objectId si email y contraseña son correctos
+// ─────────────────────────────────────────────
+// Obtener objectId (y flag admin) si email+password son correctos
+//  -> mantenemos la versión de main, que devuelve { id, esAdmin }
+// ─────────────────────────────────────────────
 const getUserObjectId = async (email, password) => {
+  console.log("Email in getUserObjectId:", email);
   const ParseUser = Parse.Object.extend("Usuarios");
   const query = new Parse.Query(ParseUser);
   query.equalTo("Correo", email);
 
   const result = await query.first({ useMasterKey: true });
+  console.log("Result in getUserObjectId:", result);
   if (!result) return null;
 
   const isMatch = await compareUsersPassword(result.get("PassWord"), password);
-
   if (!isMatch) return null;
 
-  return result.id;
+  const adminFlag = result.get("esAdmin");
+  const esAdmin = adminFlag === true ? true : false;
+
+  return { id: result.id, esAdmin };
 };
 
-
-//comparar contraseña de un usuario
-//DESPUES de hacer una query (result)
+// ─────────────────────────────────────────────
+// Comparar contraseña (hash vs texto)
+// ─────────────────────────────────────────────
 const compareUsersPassword = async (passwordDB, password) => {
   const hashedPassword = passwordDB;
   const isMatch = await bcrypt.compare(password, hashedPassword);
   return isMatch;
 };
 
+// ─────────────────────────────────────────────
+// Obtener usuario por id (de main)
+// ─────────────────────────────────────────────
+const getUserById = async (objectId) => {
+  const User = Parse.Object.extend("Usuarios");
+  const query = new Parse.Query(User);
+  try {
+    const user = await query.get(objectId, { useMasterKey: true });
+    if (user) {
+      return new UserModel(user.get("Nombre"), user.get("Correo"));
+    } else {
+      return null;
+    }
+  } catch (error) {
+    throw new Error("User not found");
+  }
+};
 
-module.exports = {getUserObjectId, getAllUsers, addUser, findUserByEmail, updateUserName, updateUserPassword, deleteUser };
+module.exports = {
+  getUserObjectId,
+  getAllUsers,
+  addUser,
+  findUserByEmail,
+  updateAllUser,
+  updateUserName,
+  updateUserPassword,
+  deleteUser,
+  updateUserEmail,
+  getUserById,
+};

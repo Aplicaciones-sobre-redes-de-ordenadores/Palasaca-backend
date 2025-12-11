@@ -1,5 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '.env.development') });
 const app = require("./src/app");
 
 console.log("Puerto:", process.env.PORT); 

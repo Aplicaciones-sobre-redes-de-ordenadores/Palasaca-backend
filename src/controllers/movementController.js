@@ -87,7 +87,55 @@ const createMovement = async (req, res) => {
   }
 };
 
+// GET /movements/all
+// Devuelve todos los movimientos de todos los usuarios, ideal para calcular tendencias generales
+const getAllMovements = async (req, res) => {
+  try {
+    const movements = await movementService.getAllMovements(); // suponiendo que creas esta función en tu service
+
+    res.json({
+      success: true,
+      movements: movements.map(movement => movement.toJSON())
+    });
+  } catch (error) {
+    console.error("Error in getAllMovements:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+const getMonthlyTrend = async (req, res) => {
+  try {
+    const { accountId } = req.params;
+
+    if (!accountId) {
+      return res.status(400).json({
+        success: false,
+        error: "Account ID is required"
+      });
+    }
+
+    const trendData = await movementService.getMonthlyTrend(accountId);
+
+    res.json({
+      success: true,
+      data: trendData
+    });
+
+  } catch (error) {
+    console.error("Error in getMonthlyTrend:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getMovementsByAccount,
-  createMovement
+  createMovement,
+  getAllMovements,
+  getMonthlyTrend
 };

@@ -19,9 +19,16 @@ afterAll(() => {
   console.error.mockRestore();
 });
 
+jest.mock('../../../src/services/logService', () => ({
+  saveLog: jest.fn().mockResolvedValue(true)
+}));
+
 describe('loginUserController', () => {
   test('devuelve success y user si las credenciales son correctas', async () => {
-    userService.getUserObjectId = jest.fn().mockResolvedValue('abc123');
+    userService.getUserObjectId = jest.fn().mockResolvedValue({
+      objectId: 'abc123',
+      esAdmin: undefined
+    });
 
     const req = { body: { email: 'test@test.com', password: '1234' } };
     const res = mockResponse();
@@ -33,7 +40,7 @@ describe('loginUserController', () => {
 
     expect(res.json).toHaveBeenCalledWith({
       success: true,
-      user: { objectId: 'abc123', email: 'test@test.com' },
+      user: { objectId: 'abc123', email: 'test@test.com', esAdmin: undefined },
     });
   });
 
