@@ -131,7 +131,7 @@ const getMonthlyTrend = async (accountId) => {
     // 2. Filtrar por fecha (últimos 6 meses)
     const today = new Date();
     const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(today.getMonth() - 5);
+    sixMonthsAgo.setMonth(today.getMonth() - 2);
     sixMonthsAgo.setDate(1);
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
