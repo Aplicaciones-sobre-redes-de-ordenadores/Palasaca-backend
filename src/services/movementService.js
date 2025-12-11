@@ -131,7 +131,7 @@ const getMonthlyTrend = async (accountId) => {
     // 2. Filtrar por fecha (últimos 6 meses)
     const today = new Date();
     const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(today.getMonth() - 2);
+    sixMonthsAgo.setMonth(today.getMonth() - 1);
     sixMonthsAgo.setDate(1);
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
@@ -144,7 +144,7 @@ const getMonthlyTrend = async (accountId) => {
     const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     const trendMap = new Map();
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 2; i++) {
       const d = new Date(sixMonthsAgo);
       d.setMonth(d.getMonth() + i);
       const key = `${monthNames[d.getMonth()]}`;
