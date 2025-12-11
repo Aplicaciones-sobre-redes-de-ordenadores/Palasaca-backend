@@ -10,18 +10,22 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    # 👇 Definimos las credenciales y la URL de Parse Server, que ahora usa el hostname del servicio 'parse'
+    # 1. Variables que usan tus tests (se conectan a 'parse')
     env:
       NODE_ENV: test
       PARSE_APP_ID: palasaca-local-app
       PARSE_MASTER_KEY: palasaca-local-master
-      PARSE_SERVER_URL: http://parse:1337/parse # ⬅️ CORRECCIÓN CLAVE: Usamos 'parse' en lugar de 'localhost'
+      PARSE_SERVER_URL: http://parse:1337/parse 
 
     services:
       mongo:
         image: mongo:6
         ports:
           - 27017:27017
+        # Las credenciales de root de Mongo para que Parse pueda autenticarse
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: example
 
       parse:
         image: parseplatform/parse-server
@@ -30,17 +34,13 @@ jobs:
         env:
           PARSE_SERVER_APPLICATION_ID: palasaca-local-app
           PARSE_SERVER_MASTER_KEY: palasaca-local-master
-          # La conexión de Parse a Mongo usa el nombre del servicio 'mongo'
-          PARSE_SERVER_DATABASE_URI: mongodb://mongo:27017/palasaca_test
-          # Esto es la URL que Parse Server se auto-publica
+          # La URI de conexión de Parse a Mongo (usando las credenciales de root y el nombre del servicio 'mongo')
+          PARSE_SERVER_DATABASE_URI: mongodb://root:example@mongo:27017/palasaca_test?authSource=admin
           PARSE_SERVER_URL: http://localhost:1337/parse
+          PARSE_SERVER_MASTER_KEY_IPS: 0.0.0.0/0,::/0
         
-        # 👇 HEALTH CHECK: Asegura que Parse Server esté disponible antes de ejecutar los pasos
-        options: >
-          --health-cmd "curl http://localhost:1337/parse/health"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
+        # 2. Health Check para que GitHub Actions espere a que Parse esté online (corrige el Exit Code 125)
+        options: '--health-cmd "curl http://localhost:1337/parse/health" --health-interval 5s --health-timeout 5s --health-retries 10'
 
     steps:
       - name: Checkout code
@@ -55,7 +55,7 @@ jobs:
         run: npm install --include=dev
 
       - name: Run tests
-        # 👇 Inyectamos las variables definidas en la sección 'env' del job.
+        # Los tests usan la variable PARSE_SERVER_URL: http://parse:1337/parse inyectada en el job.
         env:
           APP_ID_DEV: ${{ env.PARSE_APP_ID }}
           MASTER_KEY_DEV: ${{ env.PARSE_MASTER_KEY }}
