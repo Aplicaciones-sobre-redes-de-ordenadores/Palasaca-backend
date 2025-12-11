@@ -116,6 +116,8 @@ const getAllMovements = async () => {
   }
 };
 
+
+// Obtener tendencia mensual Y desglose por categorías
 const getMonthlyTrend = async (accountId) => {
   try {
     const Movement = Parse.Object.extend("Movimiento");
@@ -129,69 +131,77 @@ const getMonthlyTrend = async (accountId) => {
     // 2. Filtrar por fecha (últimos 6 meses)
     const today = new Date();
     const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(today.getMonth() - 5); // 5 meses atrás + el actual = 6
-    sixMonthsAgo.setDate(1); // Desde el día 1
+    sixMonthsAgo.setMonth(today.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
     query.greaterThanOrEqualTo("createdAt", sixMonthsAgo);
-    query.ascending("createdAt"); // Ordenar por fecha para facilitar el agrupamiento
+    query.ascending("createdAt");
 
     const results = await query.find({ useMasterKey: true });
 
-    // 3. Inicializar estructura de los últimos 6 meses (para que aparezcan meses vacíos si los hay)
+    // --- PROCESAMIENTO TENDENCIA  ---
     const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     const trendMap = new Map();
 
-    // Rellenamos el mapa con los últimos 6 meses inicializados a 0
     for (let i = 0; i < 6; i++) {
       const d = new Date(sixMonthsAgo);
       d.setMonth(d.getMonth() + i);
-      const key = `${monthNames[d.getMonth()]}`; // Ejemplo: "Ene", "Feb"
+      const key = `${monthNames[d.getMonth()]}`;
       trendMap.set(key, { income: 0, expense: 0 });
     }
 
-    // 4. Procesar y sumarizar los datos
+
+    const categoryMap = { ingreso: {}, gasto: {} };
+
     results.forEach((mov) => {
+      // 1. Lógica Tendencia Mensual
       const date = mov.get("createdAt");
       const monthIndex = date.getMonth();
-      const key = monthNames[monthIndex];
+      const monthKey = monthNames[monthIndex];
+      const type = mov.get("Tipo"); // 'ingreso' o 'gasto'
+      const amount = Math.abs(mov.get("Cantidad"));
+      const catName = mov.get("Categoria") || "Otros";
 
-      // Solo procesamos si el mes cae dentro de nuestro rango generado (seguridad)
-      if (trendMap.has(key)) {
-        const type = mov.get("Tipo"); // 'ingreso' o 'gasto'
-        const amount = Math.abs(mov.get("Cantidad")); // Usamos valor absoluto para el gráfico
+      if (trendMap.has(monthKey)) {
+        const currentData = trendMap.get(monthKey);
+        if (type === 'ingreso') currentData.income += amount;
+        else if (type === 'gasto') currentData.expense += amount;
+        trendMap.set(monthKey, currentData);
+      }
 
-        const currentData = trendMap.get(key);
-        
-        if (type === 'ingreso') {
-          currentData.income += amount;
-        } else if (type === 'gasto') {
-          currentData.expense += amount;
-        }
-        
-        trendMap.set(key, currentData);
+      // 2. Lógica Desglose Categorías
+      if (type === 'ingreso' || type === 'gasto') {
+        if (!categoryMap[type][catName]) categoryMap[type][catName] = 0;
+        categoryMap[type][catName] += amount;
       }
     });
 
-    // 5. Formatear para el Frontend
+    // Formatear Tendencia
     const labels = [];
     const dataIngresos = [];
     const dataGastos = [];
-
     trendMap.forEach((value, key) => {
       labels.push(key);
       dataIngresos.push(value.income);
       dataGastos.push(value.expense);
     });
 
+    // Formatear Categorías (Convertir objeto a array ordenado)
+    const formatCats = (catObj) => Object.entries(catObj)
+      .map(([name, total]) => ({ name, total }))
+      .sort((a, b) => b.total - a.total); // Ordenar mayor a menor
+
     return {
-      labels,
-      dataIngresos,
-      dataGastos
+      trend: { labels, dataIngresos, dataGastos },
+      categories: {
+        ingresos: formatCats(categoryMap.ingreso),
+        gastos: formatCats(categoryMap.gasto)
+      }
     };
 
   } catch (error) {
-    console.error("Error calculating monthly trend:", error);
+    console.error("Error calculating trend:", error);
     throw error;
   }
 };
